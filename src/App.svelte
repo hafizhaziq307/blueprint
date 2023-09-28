@@ -1,13 +1,19 @@
 <script>
+    import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
+
+
     import { backendFrameworks, frontendTemplates, inputTypes } from "./data.js";
     import CreateModal from './lib/modals/CreateModal.svelte';
     import EditModal from './lib/modals/EditModal.svelte';
     import Card from './lib/Card.svelte';
     import { fields } from './stores.js';
 
+    let backendChecked = null;
+    let frontendChecked = null;
+    let title = null;
+    let tableName = null;
+    let primaryKey = "id";
 
-    let backendChecked;
-    let frontendChecked;
     let isCreateModalOpen = false;
     let isEditModalOpen = false;
     let editedRecord = {
@@ -83,59 +89,65 @@
 
         // tbc
     }
+
+    async function generateCode() {
+        console.log({backendChecked, frontendChecked, title, primaryKey, tableName, $fields});
+
+        await writeTextFile({ path: 'app.php', contents: 'file contents' }, { dir: BaseDirectory.Download });
+    }
 </script>
 
 <main>
     <div class="min-h-screen w-full p-4 space-y-3">
+
         <h1 class="text-2xl font-medium">Laravel Generator</h1>
+        
         <div class="grid grid-cols-2 gap-3">
             <Card headerTitle="Backend Framework (Choose one)">
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
                     {#each backendFrameworks as backendFramework, i}
                         <article class="text-sm">
-                            <label for="{backendFramework.id}" class={`hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer ${backendChecked == backendFramework.id ? 'border-blue-500' : 'border-gray-200'}`}>
+                            <label for="backend{backendFramework.id}" class={`hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer ${backendChecked == backendFramework.id ? 'border-blue-500' : 'border-gray-200'}`}>
                                 <h2 class="font-medium text-gray-700">{backendFramework.title}</h2>
                                 <i class={`fas fa-check-circle text-xl text-blue-600 ${backendChecked == backendFramework.id ? 'visible' : 'invisible' }`}></i>
                             </label>
-                            <input type="radio" id="{backendFramework.id}" value={backendFramework.id} bind:group={backendChecked} class="hidden">
+                            <input type="radio" id="backend{backendFramework.id}" value={backendFramework.id} bind:group={backendChecked} class="hidden">
                         </article>
                     {/each}
                 </div>
             </Card>
 
             <Card headerTitle="Frontend Template (Choose one)">
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
                     {#each frontendTemplates as frontendTemplate, i}
                         <article class="text-sm">
-                            <label for="{frontendTemplate.id}" class={`hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer ${frontendChecked == frontendTemplate.id ? 'border-blue-500' : 'border-gray-200'}`}>
+                            <label for="frontend{frontendTemplate.id}" class={`hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer ${frontendChecked == frontendTemplate.id ? 'border-blue-500' : 'border-gray-200'}`}>
                                 <h2 class="font-medium text-gray-700">{frontendTemplate.title}</h2>
                                 <i class={`fas fa-check-circle text-xl text-blue-600 ${frontendChecked == frontendTemplate.id ? 'visible' : 'invisible' }`}></i>
                             </label>
-                            <input type="radio" id="{frontendTemplate.id}" value={frontendTemplate.id} bind:group={frontendChecked} class="hidden">
+                            <input type="radio" id="frontend{frontendTemplate.id}" value={frontendTemplate.id} bind:group={frontendChecked} class="hidden">
                         </article>
                     {/each}
                 </div>
             </Card>
-
-            
         </div>
     
         <div class="rounded-lg border shadow bg-white">
             <Card headerTitle="CRUD">
                 <div class="grid grid-cols-3 gap-4">
                     <div>
-                        <label for="first_name" class="block mb-1 text-sm font-medium text-gray-900 ">CRUD Title</label>
-                        <input type="text" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="CRUD title" required>
+                        <label class="block mb-1 text-sm font-medium text-gray-900 ">CRUD Title</label>
+                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="CRUD title" bind:value={title} required>
                     </div>
                     
                     <div>
-                        <label for="first_name" class="block mb-1 text-sm font-medium text-gray-900 ">Table</label>
-                        <input type="text" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="table" required>
+                        <label class="block mb-1 text-sm font-medium text-gray-900 ">Table</label>
+                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="table" bind:value={tableName} required>
                     </div>
         
                     <div>
-                        <label for="first_name" class="block mb-1 text-sm font-medium text-gray-900 ">Primary Key</label>
-                        <input type="text" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="primary key" value="id" required>
+                        <label class="block mb-1 text-sm font-medium text-gray-900 ">Primary Key</label>
+                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="primary key" bind:value={primaryKey} required>
                     </div>
                 </div>
             </Card>
@@ -195,6 +207,10 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <div>
+            <button class="bg-blue-600 hover:bg-blue-500 rounded w-full px-4 py-2 text-white font-medium" on:click={generateCode}>Generate</button>
         </div>
     </div>
 

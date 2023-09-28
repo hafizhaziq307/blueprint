@@ -8,6 +8,10 @@ export const backendFrameworks = [
 export const frontendTemplates = [
     {
         id: 1,
+        title: 'None'
+    },
+    {
+        id: 2,
         title: 'AdminLTE 4'
     },
 ];
