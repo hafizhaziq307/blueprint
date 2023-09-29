@@ -14,6 +14,10 @@ export const frontendTemplates = [
         id: 2,
         title: 'AdminLTE 4'
     },
+    {
+        id: 3,
+        title: 'SB Admin 2'
+    },
 ];
 
 export const inputTypes = [

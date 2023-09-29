@@ -1,5 +1,5 @@
 <script>
-    import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
+    import { writeTextFile, readTextFile, BaseDirectory, createDir } from '@tauri-apps/api/fs';
 
 
     import { backendFrameworks, frontendTemplates, inputTypes } from "./data.js";
@@ -91,9 +91,40 @@
     }
 
     async function generateCode() {
-        console.log({backendChecked, frontendChecked, title, primaryKey, tableName, $fields});
+        const foldername = `${getTimestamp()}-crudtitle`;
+        await createDir(foldername, { dir: BaseDirectory.Download, recursive: true });
+        
+        // model
+        let modelContent = await fetchFileContents('laravel10/model.php');
+        modelContent = modelContent.replace('@@@tablename@@@', 'user').replace('@@@primarykey@@@', 'id');
+        await writeTextFile({ path: `${foldername}/model.php`, contents: modelContent }, { dir: BaseDirectory.Download });
+    }
 
-        await writeTextFile({ path: 'app.php', contents: 'file contents' }, { dir: BaseDirectory.Download });
+    function generateModel() {
+
+    }
+
+    function fetchFileContents(path) {
+        return new Promise(async (resolve, reject) => {
+            const response = await fetch(path);
+
+            try {
+                const contents = await response.text(); 
+                resolve(contents);
+
+            } catch (error) {
+                reject(error.message);
+            }
+        });
+    }
+
+    function getTimestamp() {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+
+        return `${year}${month}${day}`;
     }
 </script>
 
