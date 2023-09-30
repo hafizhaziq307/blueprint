@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Controllers\TemplateController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,9 +14,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/template', [TemplateController::class, 'template']);
-Route::post('/template/getAll', [TemplateController::class, 'getAll']);
-Route::post('/template/getFirst', [TemplateController::class, 'getFirst']);
-Route::post('/template', [TemplateController::class, 'store']);
-Route::patch('/template/{id}', [TemplateController::class, 'update']);
-Route::delete('/template/{id}', [TemplateController::class, 'destroy']);
+Route::prefix('template')->controller(TestController::class)->group(function () {
+    Route::get('/', 'index');
+    Route::post('/getAll', 'getAll');
+    Route::post('/getFirst', 'getFirst');
+    Route::post('/', 'store');
+    Route::patch('/{id}', 'update');
+    Route::delete('/{id}', 'destroy');
+});

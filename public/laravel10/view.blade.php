@@ -9,6 +9,7 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('adminlte/plugins/toastr/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('adminlte/dist/css/adminlte.min.css?v=3.2.0') }}">
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
@@ -88,7 +89,7 @@
                                             <h3 class="card-title">@@@crudtitle@@@</h3>
                                         </div>
                                         <div class="col-sm-2">
-                                            <button type="button" class="btn btn-primary float-sm-right" data-toggle="modal" data-target="#create-tablename-modal">
+                                            <button type="button" class="btn btn-primary float-sm-right" data-toggle="modal" data-target="#createModal">
                                                 <i class="fas fa-plus"></i>
                                                 <span>Add</span>
                                             </button>
@@ -102,6 +103,7 @@
                                             <thead>
                                                 <tr>
                                                     <th>Bil</th>
+                                                    <th>Nama Mukim</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
@@ -117,7 +119,7 @@
                 </div>
 
                 <!-- create modal -->
-                <div class="modal fade" id="create-tablename-modal">
+                <div class="modal fade" id="createModal">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -127,7 +129,8 @@
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <form action="{{ url('./template/update') }}" method="post">
+                                <form action="{{ url('./template/update') }}" method="POST">
+                                    @csrf
                                     <!-- <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label class="mb-1">@@@fieldname@@@</label>
@@ -144,8 +147,8 @@
                     </div>
                 </div>
 
-                <!-- edit modal -->
-                <div class="modal fade" id="edit-tablename-modal">
+                <!-- edit modal  -->
+                <div class="modal fade" id="editModal">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -155,19 +158,43 @@
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <form action="{{ url('./template/update') }}" method="post">
+                                <form method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+
                                     <div class="form-row">
                                         <div class="form-group col-md-6">
-                                            <label class="mb-1">crudtitle</label>
-                                            <input type="text" class="form-control" placeholder="crudtitle" name="crudtitle">
+                                            <label class="mb-1">mukim</label>
+                                            <input type="text" class="form-control" placeholder="mukimtitle" name="mukim">
+                                            <div id="mukim-error" class="invalid-feedback"></div>
                                         </div>
                                     </div>
                                     @@@htmlfields@@@
 
                                     <div class="d-flex justify-content-end">
-                                        <button type="submit" class="btn btn-primary">Kemaskini</button>
+                                        <button type="button" class="btn btn-primary" id="updateBtn">Kemaskini</button>
                                     </div>
-                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- delete modal -->
+                <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">Delete Item</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete this item?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" id="confirm-delete">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -186,6 +213,7 @@
     </div>
 
     <script src="{{ asset('adminlte/plugins/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('adminlte/plugins/toastr/toastr.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
@@ -202,7 +230,7 @@
             }
         });
 
-        const aktiviti_table = $('#aktiviti-table').DataTable({
+        const aktivitiTable = $('#aktiviti-table').DataTable({
             processing: true,
             serverSide: true,
             responsive: true,
@@ -220,11 +248,15 @@
                 url: "{{ url('/template/getAll') }}",
                 type: "POST",
                 error: (xhr) => {
-                    console.error(JSON.parse(xhr.responseText).error);
+                    console.error(xhr.responseText);
                 }
             },
             columns: [{
-                    data: null,
+                    data: 'idmukim',
+                    className: "text-center",
+                },
+                {
+                    data: 'mukim',
                     className: "text-center",
                 },
                 {
@@ -234,27 +266,28 @@
                     className: "text-center",
                     render: (data, type, row) => {
                         return `
-                        <button type="button" class="btn btn-info edit-button">
+                        <button type="button" class="btn btn-info editBtn">
                             <i class="fas fa-pencil-alt"></i>
-                            <span>Edit</span>
+                            Edit
                         </button>
-                        <form action="{{ url('./template/${row.idmukim}') }}" method="POST">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-trash"></i>
-                                Padam
-                            </button>
-                        </form>
-                        `;
+
+                        <button type="button" class="btn btn-danger deleteBtn" data-toggle="modal" data-target="#deleteModal">
+                            <i class="fas fa-trash"></i>
+                            Padam 
+                        </button>`;
                     }
                 },
             ],
         });
 
-        $("#aktiviti-table tbody").on("click", ".edit-button", function() {
-            const data = aktiviti_table.row($(this).parents("tr")).data();
-           
+        $("#aktiviti-table tbody").on("click", ".editBtn", function() {
+            // reset error validation
+            $("#editModal form .form-control").removeClass("is-invalid");
+            $("#editModal form .invalid-feedback").text("");
+
+            const data = aktivitiTable.row($(this).parents("tr")).data();
+            $('#updateBtn').data('id', data.idmukim);
+
             $.ajax({
                 url: "{{ url('./template/getFirst') }}",
                 type: "POST",
@@ -263,16 +296,82 @@
                 },
                 dataType: "json",
                 success: function(res) {
-                    $("#edit-tablename-modal").modal('show');
+                    $("#editModal").modal('show');
 
-                    $("#edit-tablename-modal [name='crudtitle']").val(res.crudtitle);
+                    $("#editModal").attr("action", `{{ url('./template/${data.idmukim}') }}`);
+
+                    $("#editModal [name='mukim']").val(res.mukim);
                 },
                 error: (xhr) => {
-                    console.error(JSON.parse(xhr.responseText).error);
+                    console.error(xhr.responseText);
                 }
             });
         });
 
+        $('#updateBtn').click(function() {
+            const id = $(this).data('id');
+            const fields = $("#editModal form").serializeArray();
+
+            fieldsObject = {};
+            for (const field of fields) {
+                fieldsObject[field.name] = field.value
+            }
+
+            $.ajax({
+                url: `{{ url('./template/${id}') }}`,
+                type: "POST",
+                data: {
+                    _method: "PATCH",
+                    fields: fieldsObject
+                },
+                success: function(res) {
+                    $("#editModal").modal('hide');
+                    toastr.success(res.message)
+                    aktivitiTable.ajax.reload();
+                },
+                error: (xhr) => {
+                    if (xhr.status == 422) {
+                        const errors = xhr.responseJSON.errors;
+                        for (const [key, value] of Object.entries(errors)) {
+                            $("#editModal [name='" + key + "']").addClass("is-invalid");
+                            $("#editModal #" + key + "-error").text(value);
+                        }
+
+                    } else {
+                        $("#editModal").modal('hide');
+                        console.error(xhr.responseText);
+                        toastr.error('Error occured!')
+                    }
+                }
+            });
+        });
+
+        $("#aktiviti-table tbody").on('click', '.deleteBtn', function() {
+            const data = aktivitiTable.row($(this).parents("tr")).data();
+            $('#confirm-delete').data('id', data.idmukim);
+        });
+
+        $('#confirm-delete').click(function() {
+            const id = $(this).data('id');
+
+            $.ajax({
+                url: `{{ url('./template/${id}') }}`,
+                type: "POST",
+                data: {
+                    _method: "DELETE"
+                },
+                success: function(res) {
+                    $("#deleteModal").modal('hide');
+                    toastr.success(res.message)
+                    aktivitiTable.ajax.reload();
+                },
+                error: (xhr) => {
+                    $("#deleteModal").modal('hide');
+                    console.error(xhr.responseText);
+                    toastr.error('Error occured!')
+                }
+            });
+        });
     </script>
 </body>
 

@@ -10,7 +10,7 @@ use Yajra\Datatables\Datatables;
 class TestController extends Controller
 {
     // index
-    public function template()
+    public function index()
     {
         return view('test');
     }
@@ -29,14 +29,14 @@ class TestController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
     public function getFirst(Request $request)
     {
         try {
             if ($request->ajax()) {
                 $data = Test::findOrFail($request->id);
 
-                return response()->json(['data' => $data]);
+                return response()->json($data);
             }
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -49,7 +49,6 @@ class TestController extends Controller
             Test::findOrFail($id)->insert($request->fields);
 
             return response()->json(['success' => true, 'message' => 'Record added successfully!']);
-
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -57,12 +56,17 @@ class TestController extends Controller
 
     public function update(Request $request, $id)
     {
+        $validatedData = $request->validate([
+            'mukim' => 'required|string|max:10',
+        ]);
+
         try {
-            Test::findOrFail($id)->update($request->fields);
+            Test::findOrFail($id)->update($validatedData);
 
             return response()->json(['success' => true, 'message' => 'Record updated successfully!']);
-
         } catch (Exception $e) {
+            
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -73,7 +77,6 @@ class TestController extends Controller
             Test::findOrFail($id)->delete();
 
             return response()->json(['success' => true, 'message' => 'Record deleted successfully!']);
-
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
