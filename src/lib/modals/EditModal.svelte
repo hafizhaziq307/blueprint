@@ -33,7 +33,7 @@
     
                 <div>
                     <label for="input-type" class="block text-sm font-bold ml-1 mb-1">Input type</label>
-                    <select name="inputType" id="input-type" class="py-2 px-3 block w-full border-2 border-gray-200 rounded-md outline-none text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                    <select name="inputTypeId" id="input-type" class="py-2 px-3 block w-full border-2 border-gray-200 rounded-md outline-none text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
                         {#each inputTypes as inputType}
                             <option value={inputType.id} selected={(inputType.id == editedRecord.inputType) ? 'selected' : ''}>{inputType.title}</option>
                         {/each}

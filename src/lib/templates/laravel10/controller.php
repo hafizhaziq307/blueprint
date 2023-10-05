@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Template;
-use Exception;
 use Illuminate\Http\Request;
+use App\Models\@@@modelname@@@;
+use Exception;
 use Yajra\Datatables\Datatables;
 
-class TemplateController extends Controller
+class @@@modelname@@@Controller extends Controller
 {
-    public function template()
+    // index
+    public function index()
     {
-        return view('template');
+        return view('@@@foldername@@@.test');
     }
 
     public function getAll(Request $request)
     {
         try {
             if ($request->ajax()) {
-                $data = Template::get();
+                $data = @@@modelname@@@::get();
 
                 return Datatables::of($data)
                     ->addIndexColumn()
@@ -28,27 +29,29 @@ class TemplateController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
     public function getFirst(Request $request)
     {
         try {
             if ($request->ajax()) {
-                $data = Template::findOrFail($request->id);
+                $data = @@@modelname@@@::findOrFail($request->id);
 
-                return response()->json(['data' => $data]);
+                return response()->json($data);
             }
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            @@@validationrules@@@
+        ]);
+
         try {
-            Template::findOrFail($id)->insert($request->fields);
-
+            @@@modelname@@@::insert($validatedData);
             return response()->json(['success' => true, 'message' => 'Record added successfully!']);
-
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -56,11 +59,13 @@ class TemplateController extends Controller
 
     public function update(Request $request, $id)
     {
+        $validatedData = $request->validate([
+            @@@validationrules@@@
+        ]);
+
         try {
-            Template::findOrFail($id)->update($request->fields);
-
+            @@@modelname@@@::findOrFail($id)->update($validatedData);
             return response()->json(['success' => true, 'message' => 'Record updated successfully!']);
-
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -69,10 +74,8 @@ class TemplateController extends Controller
     public function destroy($id)
     {
         try {
-            Template::findOrFail($id)->delete();
-
+            @@@modelname@@@::findOrFail($id)->delete();
             return response()->json(['success' => true, 'message' => 'Record deleted successfully!']);
-
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

@@ -20,13 +20,13 @@
         id: null,
         label: null,
         fieldName: null,
-        inputType: null
+        inputTypeId: null
     };
     let createdRecord = {
         id: null,
         label: null,
         fieldName: null,
-        inputType: null
+        inputTypeId: null
     };
 
     function openCreateModal() {
@@ -45,7 +45,7 @@
                 id: record.id,
                 label: record.label,
                 fieldName: record.fieldName,
-                inputType: record.inputType
+                inputTypeId: record.inputTypeId
             };
             isEditModalOpen = true;
         }
@@ -56,14 +56,14 @@
             id: null,
             label: null,
             fieldName: null,
-            inputType: null
+            inputTypeId: null
         };
 
         isEditModalOpen  = false;
     }
 
     function saveData(e) {
-        let obj = {}
+        let obj = {};
 
         const formData = new FormData(e.target);
         for (const [name, value] of formData) {
@@ -91,18 +91,79 @@
     }
 
     async function generateCode() {
-        const foldername = `${getTimestamp()}-crudtitle`;
-        await createDir(foldername, { dir: BaseDirectory.Download, recursive: true });
-        
-        // model
-        let modelContent = await fetchFileContents('laravel10/model.php');
-        modelContent = modelContent.replace('@@@tablename@@@', 'user').replace('@@@primarykey@@@', 'id');
-        await writeTextFile({ path: `${foldername}/model.php`, contents: modelContent }, { dir: BaseDirectory.Download });
+        // const foldername = `${getTimestamp()}-crudtitle`;
+        // await createDir(foldername, { dir: BaseDirectory.Download, recursive: true });
+
+        generateModel();
+        generateView();
+        generateController();
+        generateRoute();
     }
 
-    function generateModel() {
+    // TODO: test later
+    async function generateController(modelname, foldername, fields) {
+        let validationRules = getValidationRules(fields);
+
+        let contents = await fetchFileContents('laravel10/controller.php');
+        contents = contents
+            .replace('@@@modelname@@@', modelname)
+            .replace('@@@foldername@@@', foldername)
+            .replace('@@@validationrules@@@', validationRules);
+
+        await writeTextFile({ path: `${folderViewName}/controller.php`, contents: contents }, { dir: BaseDirectory.Download });
 
     }
+
+    async function generateModel(tableName, folderViewName, primarykey) {
+        let contents = await fetchFileContents('laravel10/model.php');
+        contents = contents
+            .replace('@@@tablename@@@', tableName)
+            .replace('@@@primarykey@@@', primarykey);
+        await writeTextFile({ path: `${folderViewName}/model.php`, contents: contents }, { dir: BaseDirectory.Download });
+    }
+
+    // TODO: test later
+    async function generateRoute(folderDownloadName, folderViewName, controllerName) {
+        let contents = await fetchFileContents('laravel10/web.php');
+        contents = contents
+            .replace('@@@controllername@@@', controllerName)
+            .replace('@@@folderviewname@@@', folderViewName)
+        await writeTextFile({ path: `${folderDownloadName}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
+    }
+
+    async function generateView() {
+
+    }
+
+
+    function getValidationRules(fields) {
+        let data = ``;
+
+        for (const field of fields) {
+            let str;
+
+            if (field.inputTypeId == 1) {
+                str = `'${field.fieldName}' => 'required|string',\n`;
+            } 
+            else if (field.inputTypeId == 2) {
+                str = `'${field.fieldName}' => 'required|numeric',\n`;
+            } 
+            else if (field.inputTypeId == 3) {
+                str = `'${field.fieldName}' => 'required|date',\n`;
+            } 
+            else if (field.inputTypeId == 4) {
+                str = `'${field.fieldName}' => 'required|string',\n`;
+            } 
+            else if (field.inputTypeId == 5) {
+                str = `'${field.fieldName}' => 'required',\n`;
+            }
+    
+            data += str;
+        }
+
+        return data;
+    }
+
 
     function fetchFileContents(path) {
         return new Promise(async (resolve, reject) => {
@@ -165,20 +226,20 @@
     
         <div class="rounded-lg border shadow bg-white">
             <Card headerTitle="CRUD">
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-900 ">CRUD Title</label>
-                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="CRUD title" bind:value={title} required>
+                        <label class="block mb-1 text-sm font-medium text-gray-900">CRUD Title</label>
+                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="CRUD title" bind:value={title} required>
                     </div>
                     
                     <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-900 ">Table</label>
-                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="table" bind:value={tableName} required>
+                        <label class="block mb-1 text-sm font-medium text-gray-900">Table</label>
+                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="table" bind:value={tableName} required>
                     </div>
         
                     <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-900 ">Primary Key</label>
-                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="primary key" bind:value={primaryKey} required>
+                        <label class="block mb-1 text-sm font-medium text-gray-900">Primary Key</label>
+                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="primary key" bind:value={primaryKey} required>
                     </div>
                 </div>
             </Card>
@@ -186,11 +247,9 @@
     
         <div class="space-y-2">
             <div class="flex justify-end">
-                <button class="w-16 py-1.5 rounded text-sm text-white bg-green-500 hover:bg-green-600 font-medium flex items-center justify-center" on:click={openCreateModal}>
-                    <div>
-                        <i class="fas fa-plus text-xs"></i>
-                    </div>
-                    <div class="ml-1">Add</div>
+                <button class="w-16 py-1.5 rounded text-white bg-green-500 hover:bg-green-600 flex items-center justify-center gap-1" on:click={openCreateModal}>
+                    <i class="fas fa-plus text-xs"></i>
+                    <div class="font-medium text-sm">Add</div>
                 </button>
             </div>
     
@@ -214,7 +273,7 @@
                                         {field.fieldName}
                                     </td>
                                     <td class="py-2 px-4 text-center">
-                                        {inputTypes[field.inputType].title}
+                                        { inputTypes.find((x) => x.id == field.inputTypeId)?.title ?? '-' }
                                     </td>
                                     <td class="py-2 px-4 text-center">
                                         <div class="flex item-center justify-center gap-4">
