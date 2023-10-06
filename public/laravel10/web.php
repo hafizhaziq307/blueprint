@@ -1,24 +1,13 @@
 <?php
 
-use App\Http\Controllers\TestController;
+use App\Http\Controllers\@@@controllername@@@;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
-Route::prefix('template')->controller(TestController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::post('/getAll', 'getAll');
-    Route::post('/getFirst', 'getFirst');
-    Route::post('/', 'store');
-    Route::patch('/{id}', 'update');
-    Route::delete('/{id}', 'destroy');
+Route::prefix('@@@folderviewname@@@')->controller(@@@controllername@@@::class)->group(function () {
+    Route::get('/', 'index')->name('@@@folderviewname@@@.index');
+    Route::post('/getAll', 'getAll')->name('@@@folderviewname@@@.getAll');
+    Route::post('/getFirst', 'getFirst')->name('@@@folderviewname@@@.getFirst');
+    Route::post('/', 'store')->name('@@@folderviewname@@@.store');
+    Route::patch('/{id}', 'update')->name('@@@folderviewname@@@.update');
+    Route::delete('/{id}', 'destroy')->name('@@@folderviewname@@@.destroy');
 });

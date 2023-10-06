@@ -2,11 +2,12 @@
     import { writeTextFile, readTextFile, BaseDirectory, createDir } from '@tauri-apps/api/fs';
 
 
-    import { backendFrameworks, frontendTemplates, inputTypes } from "./data.js";
+    import { frontendTemplates, inputTypes } from "./data.js";
     import CreateModal from './lib/modals/CreateModal.svelte';
     import EditModal from './lib/modals/EditModal.svelte';
     import Card from './lib/Card.svelte';
     import { fields } from './stores.js';
+    import { serializeFormArray, getTimestamp, isEmpty, fetchFileContents, getNamingConventionsForLaravel, isSnakeCase } from './helper.js';
 
     let backendChecked = null;
     let frontendChecked = null;
@@ -59,7 +60,7 @@
             inputTypeId: null
         };
 
-        isEditModalOpen  = false;
+        isEditModalOpen = false;
     }
 
     function saveData(e) {
@@ -90,51 +91,150 @@
         // tbc
     }
 
-    async function generateCode() {
-        // const foldername = `${getTimestamp()}-crudtitle`;
-        // await createDir(foldername, { dir: BaseDirectory.Download, recursive: true });
+    async function generateCode(e) {
+        let data = {};
+        const formData = new FormData(e.target);
+        for (const [name, value] of formData) {
+            data[name] = value;
+        }
+        data['fields'] = $fields;
 
-        generateModel();
-        generateView();
-        generateController();
-        generateRoute();
+        if (Object.values(data).some(x => isEmpty(x))) {
+            console.log('Please complete all the forms.');
+            return;
+        }
+
+        if (!isSnakeCase(data.tableName)) {
+            console.log('table name must be in snake case');
+            return;
+        }
+
+        let model = getNamingConventionsForLaravel(data.tableName, "model");
+        let view = getNamingConventionsForLaravel(data.tableName, "view");
+        let controller = getNamingConventionsForLaravel(data.tableName, "controller");
+        let url = getNamingConventionsForLaravel(data.tableName, "url");
+
+        const folderDownload = `${Math.floor(Date.now() / 1000)}-${data.title}`;
+
+        // console.log(data.fields);
+
+
+        // await createDir(folderDownload, { dir: BaseDirectory.Download, recursive: true });
+
+        // generateModel(folderDownload, data.tableName, data.primaryKey);
+        // generateRoute(folderDownload, view, controller);
+        // generateController(folderDownload, model, view, data.fields);
+
+
+        generateView(folderDownload, view, data.primaryKey, data.fields, url, data.title);
     }
 
-    // TODO: test later
-    async function generateController(modelname, foldername, fields) {
+    async function generateController(folderDownload , modelname, folderView, fields) {
         let validationRules = getValidationRules(fields);
-
         let contents = await fetchFileContents('laravel10/controller.php');
-        contents = contents
-            .replace('@@@modelname@@@', modelname)
-            .replace('@@@foldername@@@', foldername)
-            .replace('@@@validationrules@@@', validationRules);
 
-        await writeTextFile({ path: `${folderViewName}/controller.php`, contents: contents }, { dir: BaseDirectory.Download });
+        contents = contents
+            .replaceAll('@@@modelname@@@', modelname)
+            .replaceAll('@@@folderviewname@@@', folderView)
+            .replaceAll('@@@validationrules@@@', validationRules);
+
+        await writeTextFile({ path: `${folderDownload}/controller.php`, contents: contents }, { dir: BaseDirectory.Download });
 
     }
 
-    async function generateModel(tableName, folderViewName, primarykey) {
+    async function generateModel(folderDownload, table, primarykey) {
         let contents = await fetchFileContents('laravel10/model.php');
+
         contents = contents
-            .replace('@@@tablename@@@', tableName)
-            .replace('@@@primarykey@@@', primarykey);
-        await writeTextFile({ path: `${folderViewName}/model.php`, contents: contents }, { dir: BaseDirectory.Download });
+            .replaceAll('@@@tablename@@@', table)
+            .replaceAll('@@@primarykey@@@', primarykey);
+
+        await writeTextFile({ path: `${folderDownload}/model.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
-    // TODO: test later
-    async function generateRoute(folderDownloadName, folderViewName, controllerName) {
+    async function generateRoute(folderDownload, folderView, controller) {
         let contents = await fetchFileContents('laravel10/web.php');
+
         contents = contents
-            .replace('@@@controllername@@@', controllerName)
-            .replace('@@@folderviewname@@@', folderViewName)
-        await writeTextFile({ path: `${folderDownloadName}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
+            .replaceAll('@@@controllername@@@', controller)
+            .replaceAll('@@@folderviewname@@@', folderView)
+
+        await writeTextFile({ path: `${folderDownload}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
-    async function generateView() {
+    async function generateView(folderDownload, folderView, primaryKey, fields, url, title) {
+        let contents = await fetchFileContents('laravel10/view.blade.php');
 
+        let thead = ``;
+        for (const field of fields) {
+            thead += `<th>${field.label}</th>\n`;
+        }
+
+        let tbody = [];
+        for (const field of fields) {
+            const temp = `\t\t\t\t{
+                    data: "${field.fieldName}",
+                    className: "text-center",
+                },`;
+            tbody.push(temp);
+        }
+        tbody = `${tbody.join('\n')}`;
+
+        let editInputs = ``;
+        for (const field of fields) {
+            editInputs += `$("#editModal [name='${fields.fieldName}']").val(res.${fields.fieldName})\n`;
+        }
+
+        let htmlInputs = getHtmlInputs(fields);
+
+        contents = contents
+            .replaceAll('@@@crudtitle@@@', title.toUpperCase())
+            .replaceAll('@@@thead@@@', thead)
+            .replaceAll('@@@tbody@@@', tbody)
+            .replaceAll('@@@primarykey@@@', primaryKey)
+            .replaceAll('@@@folderviewname@@@', folderView)
+            .replaceAll('@@@editInputs@@@', editInputs)
+            .replaceAll('@@@htmlInputs@@@', htmlInputs);
+
+
+        await createDir(`${folderDownload}/${url}`, { dir: BaseDirectory.Download, recursive: true });
+
+        await writeTextFile({ path: `${folderDownload}/${url}/index.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
+    
 
+    function getHtmlInputs(fields) {
+        let data = ``;
+
+        for (const field of fields) {
+            if (field.inputTypeId == 1) { // text
+                data += `<div class="form-group">\n\t<label class="mb-1">${field.label}</label>\n\t<input type="text" class="form-control" placeholder="${field.label}" name="${field.fieldName}">\n\t<div id="${field.fieldName}-error" class="invalid-feedback"></div></div>\n`;
+            } 
+            else if (field.inputTypeId == 2) { // number
+                data += `<div class="form-group">
+                    <label class="mb-1">${field.label}</label>
+                    <input type="number" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
+                    <div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                </div>\n`;
+            } 
+            else if (field.inputTypeId == 3) { // date
+                data += `<div class="form-group">
+                    <label class="mb-1">${field.label}</label>
+                    <input type="date" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
+                    <div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                </div>\n`;
+            } 
+            else if (field.inputTypeId == 4) { // textarea
+                data += `<div class="form-group">
+                    <label class="mb-1">${field.label}</label>
+                    <textarea class="form-control" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
+                    <div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                </div>\n`;
+            } 
+        }
+
+        return data;
+    }
 
     function getValidationRules(fields) {
         let data = ``;
@@ -154,155 +254,102 @@
             else if (field.inputTypeId == 4) {
                 str = `'${field.fieldName}' => 'required|string',\n`;
             } 
-            else if (field.inputTypeId == 5) {
-                str = `'${field.fieldName}' => 'required',\n`;
-            }
     
             data += str;
         }
 
         return data;
     }
-
-
-    function fetchFileContents(path) {
-        return new Promise(async (resolve, reject) => {
-            const response = await fetch(path);
-
-            try {
-                const contents = await response.text(); 
-                resolve(contents);
-
-            } catch (error) {
-                reject(error.message);
-            }
-        });
-    }
-
-    function getTimestamp() {
-        const currentDate = new Date();
-        const year = currentDate.getFullYear();
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-        const day = String(currentDate.getDate()).padStart(2, '0');
-
-        return `${year}${month}${day}`;
-    }
 </script>
 
 <main>
-    <div class="min-h-screen w-full p-4 space-y-3">
+    <form on:submit|preventDefault={generateCode} class="min-h-screen w-full p-4 space-y-3">
 
         <h1 class="text-2xl font-medium">Laravel Generator</h1>
         
-        <div class="grid grid-cols-2 gap-3">
-            <Card headerTitle="Backend Framework (Choose one)">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                    {#each backendFrameworks as backendFramework, i}
-                        <article class="text-sm">
-                            <label for="backend{backendFramework.id}" class={`hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer ${backendChecked == backendFramework.id ? 'border-blue-500' : 'border-gray-200'}`}>
-                                <h2 class="font-medium text-gray-700">{backendFramework.title}</h2>
-                                <i class={`fas fa-check-circle text-xl text-blue-600 ${backendChecked == backendFramework.id ? 'visible' : 'invisible' }`}></i>
-                            </label>
-                            <input type="radio" id="backend{backendFramework.id}" value={backendFramework.id} bind:group={backendChecked} class="hidden">
-                        </article>
-                    {/each}
-                </div>
-            </Card>
-
-            <Card headerTitle="Frontend Template (Choose one)">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                    {#each frontendTemplates as frontendTemplate, i}
-                        <article class="text-sm">
-                            <label for="frontend{frontendTemplate.id}" class={`hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer ${frontendChecked == frontendTemplate.id ? 'border-blue-500' : 'border-gray-200'}`}>
-                                <h2 class="font-medium text-gray-700">{frontendTemplate.title}</h2>
-                                <i class={`fas fa-check-circle text-xl text-blue-600 ${frontendChecked == frontendTemplate.id ? 'visible' : 'invisible' }`}></i>
-                            </label>
-                            <input type="radio" id="frontend{frontendTemplate.id}" value={frontendTemplate.id} bind:group={frontendChecked} class="hidden">
-                        </article>
-                    {/each}
-                </div>
-            </Card>
-        </div>
-    
-        <div class="rounded-lg border shadow bg-white">
-            <Card headerTitle="CRUD">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-900">CRUD Title</label>
-                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="CRUD title" bind:value={title} required>
-                    </div>
-                    
-                    <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-900">Table</label>
-                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="table" bind:value={tableName} required>
-                    </div>
-        
-                    <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-900">Primary Key</label>
-                        <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="primary key" bind:value={primaryKey} required>
-                    </div>
-                </div>
-            </Card>
-        </div>
-    
-        <div class="space-y-2">
-            <div class="flex justify-end">
-                <button class="w-16 py-1.5 rounded text-white bg-green-500 hover:bg-green-600 flex items-center justify-center gap-1" on:click={openCreateModal}>
-                    <i class="fas fa-plus text-xs"></i>
-                    <div class="font-medium text-sm">Add</div>
-                </button>
+        <Card headerTitle="Frontend Template (Choose one)">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                {#each frontendTemplates as frontendTemplate, i}
+                    <label>
+                        <input type="radio" value={frontendTemplate.id} class="peer hidden" name="frontendRadio" checked={i == 0 && 'checked'}>
+                        
+                        <div class="hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer text-sm border-gray-200 group peer-checked:border-blue-500">
+                            <h2 class="font-medium text-gray-700">{frontendTemplate.title}</h2>
+                            <i class="fas fa-check-circle text-xl text-blue-600 invisible group-[.peer:checked+&]:visible"></i>
+                        </div>
+                    </label>
+                {/each}
             </div>
+        </Card>
     
-            <div class="bg-white shadow-md rounded border">
-                <table class="min-w-max w-full table-auto text-sm">
-                    <thead>
-                        <tr class="bg-gray-200 text-gray-600 leading-normal">
-                            <th class="py-2 px-4 text-left">Label</th>
-                            <th class="py-2 px-4 text-left">Field name</th>
-                            <th class="py-2 px-4 text-center">Input type</th>
-                            <th class="py-2 px-4 text-center">Actions</th>
+        <Card headerTitle="CRUD">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                    <p class="block mb-1 text-sm font-medium text-gray-900">CRUD Title</p>
+                    <input type="text" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="CRUD title" bind:value={title} required>
+                </div>
+                
+                <div>
+                    <p class="block mb-1 text-sm font-medium text-gray-900">Table</p>
+                    <input type="text" name="tableName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="table" bind:value={tableName} required>
+                </div>
+    
+                <div>
+                    <p class="block mb-1 text-sm font-medium text-gray-900">Primary Key</p>
+                    <input type="text" name="primaryKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="primary key" bind:value={primaryKey} required>
+                </div>
+            </div>
+        </Card>
+    
+        <div class="text-right">
+            <button type="button" class="w-16 py-1.5 rounded text-white bg-green-500 hover:bg-green-600 inline-flex items-center justify-center gap-1" on:click={openCreateModal}>
+                <i class="fas fa-plus text-xs"></i>
+                <div class="font-medium text-sm">Add</div>
+            </button>
+        </div>
+
+        <table class="min-w-max w-full table-auto text-sm bg-white shadow rounded-lg border">
+            <thead>
+                <tr class="bg-gray-200 text-gray-600 leading-normal">
+                    <th class="py-2 px-4 text-left">Label</th>
+                    <th class="py-2 px-4 text-left">Field name</th>
+                    <th class="py-2 px-4 text-center">Input type</th>
+                    <th class="py-2 px-4 text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-600">
+                    {#each $fields as field}
+                        <tr class="border-b border-gray-200 hover:bg-gray-100">
+                            <td class="py-2 px-4 text-left whitespace-nowrap">
+                                {field.label}
+                            </td>
+                            <td class="py-2 px-4 text-left">
+                                {field.fieldName}
+                            </td>
+                            <td class="py-2 px-4 text-center">
+                                { inputTypes.find((x) => x.id == field.inputTypeId)?.title ?? '-' }
+                            </td>
+                            <td class="py-2 px-4 text-center space-x-0.5">
+                                <button type="button" class="bg-yellow-500 hover:bg-yellow-600 rounded w-16 py-1.5 text-white" on:click={() => openEditModal(field.id)}>
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="bg-red-500 hover:bg-red-600 rounded w-16 py-1.5 text-white" >
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="text-gray-600">
-                            {#each $fields as field}
-                                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-2 px-4 text-left whitespace-nowrap">
-                                        {field.label}
-                                    </td>
-                                    <td class="py-2 px-4 text-left">
-                                        {field.fieldName}
-                                    </td>
-                                    <td class="py-2 px-4 text-center">
-                                        { inputTypes.find((x) => x.id == field.inputTypeId)?.title ?? '-' }
-                                    </td>
-                                    <td class="py-2 px-4 text-center">
-                                        <div class="flex item-center justify-center gap-4">
-                                            <button type="button" class="bg-yellow-500 hover:bg-yellow-600 rounded w-16 py-1.5 text-white" on:click={() => openEditModal(field.id)}>
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="bg-red-500 hover:bg-red-600 rounded w-16 py-1.5 text-white" >
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                            
-                                        </div>
-                                    </td>
-                                </tr>
-                            {:else}
-                                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td colspan="4" class="py-2 px-4 text-center">
-                                        No Fields!
-                                    </td>
-                                </tr>
-                            {/each}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    {:else}
+                        <tr class="border-b border-gray-200 hover:bg-gray-100">
+                            <td colspan="4" class="py-2 px-4 text-center">
+                                No Fields!
+                            </td>
+                        </tr>
+                    {/each}
+            </tbody>
+        </table>
 
-        <div>
-            <button class="bg-blue-600 hover:bg-blue-500 rounded w-full px-4 py-2 text-white font-medium" on:click={generateCode}>Generate</button>
-        </div>
-    </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-500 rounded w-full px-4 py-2 text-white font-medium block">Generate</button>
+    </form>
 
     <CreateModal isOpen={isCreateModalOpen} closeModal={closeCreateModal} saveData={saveData} createdRecord={createdRecord} />
     <EditModal isOpen={isEditModalOpen} closeModal={closeEditModal} updateData={updateData} editedRecord={editedRecord} />

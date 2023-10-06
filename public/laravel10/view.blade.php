@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/toastr/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('adminlte/dist/css/adminlte.min.css?v=3.2.0') }}">
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -39,7 +38,7 @@
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
 
             <a href="#" class="brand-link">
-                <span class="brand-text font-weight-light">Efert</span>
+                <span class="brand-text font-weight-light">System Name</span>
             </a>
 
             <div class="sidebar">
@@ -77,42 +76,38 @@
                 </div>
             </section>
 
-            <!-- NEW -->
             <section class="content">
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
-                                <div class="card-header my-1 py-1">
+                                <header class="card-header my-1 py-1">
                                     <div class="row">
                                         <div class="col-sm-10 mt-2">
                                             <h3 class="card-title">@@@crudtitle@@@</h3>
                                         </div>
                                         <div class="col-sm-2">
-                                            <button type="button" class="btn btn-primary float-sm-right" data-toggle="modal" data-target="#createModal">
+                                            <button type="button" class="btn btn-primary float-sm-right" data-toggle="modal" data-target="#createModal" id="addBtn">
                                                 <i class="fas fa-plus"></i>
                                                 <span>Add</span>
                                             </button>
                                         </div>
                                     </div>
-                                </div>
+                                </header>
                                 <div class="card-body">
-
                                     <div class="table-responsive">
-                                        <table id="aktiviti-table" class="table table-striped table-bordered nowrap" style="width: 100%">
+                                        <table id="aktiviti-table" class="table table-striped table-hover table-bordered nowrap" style="width: 100%">
                                             <thead>
                                                 <tr>
-                                                    <th>Bil</th>
-                                                    <th>Nama Mukim</th>
-                                                    <th></th>
+                                                    <th>No.</th>
+                                                    @@@thead@@@
+                                                    <th>Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody></tbody>
                                         </table>
                                     </div>
-
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -122,26 +117,27 @@
                 <div class="modal fade" id="createModal">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h4 class="modal-title">Tambah Rekod @@@crudtitle@@@</h4>
+                            <header class="modal-header">
+                                <h4 class="modal-title">Add</h4>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
-                            </div>
+                            </header>
                             <div class="modal-body">
-                                <form action="{{ url('./template/update') }}" method="POST">
-                                    @csrf
-                                    <!-- <div class="form-row">
-                                    <div class="form-group col-md-6">
-                                        <label class="mb-1">@@@fieldname@@@</label>
-                                        <input type="text" class="form-control" placeholder="@@@fieldname@@@">
+                                <form>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label class="mb-1">mukim</label>
+                                            <input type="text" class="form-control" placeholder="mukimtitle" name="mukim">
+                                            <div id="mukim-error" class="invalid-feedback"></div>
+                                        </div>
                                     </div>
-                                </div> -->
-
-                                    <div class="d-flex justify-content-end">
-                                        <button type="submit" class="btn btn-primary">Simpan</button>
-                                    </div>
+                                    @@@htmlInputs@@@
                                 </form>
+
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-primary" id="saveBtn">Save</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -151,17 +147,14 @@
                 <div class="modal fade" id="editModal">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h4 class="modal-title">Kemaskini Rekod @@@crudtitle@@@</h4>
+                            <header class="modal-header">
+                                <h4 class="modal-title">Update</h4>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
-                            </div>
+                            </header>
                             <div class="modal-body">
-                                <form method="POST" class="d-inline">
-                                    @csrf
-                                    @method('PATCH')
-
+                                <form>
                                     <div class="form-row">
                                         <div class="form-group col-md-6">
                                             <label class="mb-1">mukim</label>
@@ -169,11 +162,12 @@
                                             <div id="mukim-error" class="invalid-feedback"></div>
                                         </div>
                                     </div>
-                                    @@@htmlfields@@@
+                                    @@@htmlInputs@@@
+                                </form>
 
-                                    <div class="d-flex justify-content-end">
-                                        <button type="button" class="btn btn-primary" id="updateBtn">Kemaskini</button>
-                                    </div>
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-primary" id="updateBtn">Update</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -207,8 +201,7 @@
             <div class="float-right d-none d-sm-block">
                 <b>Version</b> 1.0.0
             </div>
-            <strong>Copyright &copy; 2023 <a href="#">system_name</a>.</strong> All rights
-            reserved.
+            <strong>Copyright &copy; 2023 <a href="#">System name</a>.</strong> All rights reserved.
         </footer>
     </div>
 
@@ -216,11 +209,7 @@
     <script src="{{ asset('adminlte/plugins/toastr/toastr.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ asset('adminlte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
-
     <script src="{{ asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
     <script src="{{ asset('adminlte/dist/js/adminlte.min.js?v=3.2.0') }}"></script>
 
     <script>
@@ -230,41 +219,43 @@
             }
         });
 
+        toastr.options = {
+            "positionClass": "toast-top-center",
+            "newestOnTop": true,
+        };
+
         const aktivitiTable = $('#aktiviti-table').DataTable({
             processing: true,
             serverSide: true,
-            responsive: true,
+            scrollX: true,
             language: {
-                search: "Carian Rekod:",
-                lengthMenu: "Jumlah Rekod / Halaman: _MENU_",
-                info: "Rekod _START_ hingga _END_ / _TOTAL_ Rekod",
+                search: "Search:",
+                lengthMenu: "Total Record/ Page: _MENU_",
+                info: "Record _START_ to _END_ / _TOTAL_ Records",
                 paginate: {
                     next: '<i class="fas fa-arrow-right"></i>',
                     previous: '<i class="fas fa-arrow-left"></i>'
                 },
-                emptyTable: "Tiada rekod."
+                emptyTable: "No Records."
             },
             ajax: {
-                url: "{{ url('/template/getAll') }}",
+                url: "{{ route('@@@folderviewname@@@.getAll') }}",
                 type: "POST",
                 error: (xhr) => {
                     console.error(xhr.responseText);
                 }
             },
             columns: [{
-                    data: 'idmukim',
+                    data: 'DT_RowIndex',
                     className: "text-center",
                 },
-                {
-                    data: 'mukim',
-                    className: "text-center",
-                },
+                @@@tbody@@@
                 {
                     data: null,
                     searchable: false,
                     orderable: false,
                     className: "text-center",
-                    render: (data, type, row) => {
+                    render: () => {
                         return `
                         <button type="button" class="btn btn-info editBtn">
                             <i class="fas fa-pencil-alt"></i>
@@ -280,27 +271,58 @@
             ],
         });
 
+        $('#saveBtn').click(function() {
+            const fields = $("#createModal form").serializeArray();
+
+            fieldObj = {};
+            for (const field of fields) {
+                fieldObj[field.name] = field.value;
+            }
+
+            $.ajax({
+                url: `{{ route('@@@folderviewname@@@.store') }}`,
+                type: "POST",
+                data: fieldObj,
+                success: (res) => {
+                    $("#createModal").modal('hide');
+                    toastr.success(res.message);
+                    aktivitiTable.ajax.reload();
+                },
+                error: (xhr) => {
+                    if (xhr.status == 422) {
+                        const errors = xhr.responseJSON.errors;
+                        for (const [key, value] of Object.entries(errors)) {
+                            $(`#createModal [name="${key}"]`).addClass("is-invalid");
+                            $(`#createModal #${key}-error`).text(value);
+                        }
+                        return;
+                    } 
+                    $("#createModal").modal('hide');
+                    console.error(xhr.responseText);
+                    toastr.error('Error occured!');
+                }
+            });
+        });
+
         $("#aktiviti-table tbody").on("click", ".editBtn", function() {
             // reset error validation
             $("#editModal form .form-control").removeClass("is-invalid");
             $("#editModal form .invalid-feedback").text("");
 
             const data = aktivitiTable.row($(this).parents("tr")).data();
-            $('#updateBtn').data('id', data.idmukim);
+            $('#updateBtn').data('id', data.@@@primarykey@@@);
 
             $.ajax({
-                url: "{{ url('./template/getFirst') }}",
+                url: "{{ route('@@@folderviewname@@@.getFirst') }}",
                 type: "POST",
                 data: {
-                    id: data.idmukim,
+                    id: data.@@@primarykey@@@,
                 },
                 dataType: "json",
-                success: function(res) {
+                success: (res) => {
                     $("#editModal").modal('show');
 
-                    $("#editModal").attr("action", `{{ url('./template/${data.idmukim}') }}`);
-
-                    $("#editModal [name='mukim']").val(res.mukim);
+                    @@@editInputs@@@
                 },
                 error: (xhr) => {
                     console.error(xhr.responseText);
@@ -312,63 +334,61 @@
             const id = $(this).data('id');
             const fields = $("#editModal form").serializeArray();
 
-            fieldsObject = {};
+            fieldObj = {
+                _method: "PATCH"
+            };
             for (const field of fields) {
-                fieldsObject[field.name] = field.value
+                fieldObj[field.name] = field.value;
             }
 
             $.ajax({
-                url: `{{ url('./template/${id}') }}`,
+                url: `{{ route('@@@folderviewname@@@.update', ['id' => ':1']) }}`.replace(':1', id),
                 type: "POST",
-                data: {
-                    _method: "PATCH",
-                    fields: fieldsObject
-                },
-                success: function(res) {
+                data: fieldObj,
+                success: (res) => {
                     $("#editModal").modal('hide');
-                    toastr.success(res.message)
+                    toastr.success(res.message);
                     aktivitiTable.ajax.reload();
                 },
                 error: (xhr) => {
                     if (xhr.status == 422) {
                         const errors = xhr.responseJSON.errors;
                         for (const [key, value] of Object.entries(errors)) {
-                            $("#editModal [name='" + key + "']").addClass("is-invalid");
-                            $("#editModal #" + key + "-error").text(value);
+                            $(`#editModal [name="${key}"]`).addClass("is-invalid");
+                            $(`#editModal #${key}-error`).text(value);
                         }
-
-                    } else {
-                        $("#editModal").modal('hide');
-                        console.error(xhr.responseText);
-                        toastr.error('Error occured!')
-                    }
+                        return;
+                    } 
+                    $("#editModal").modal('hide');
+                    console.error(xhr.responseText);
+                    toastr.error('Error occured!');
                 }
             });
         });
 
         $("#aktiviti-table tbody").on('click', '.deleteBtn', function() {
             const data = aktivitiTable.row($(this).parents("tr")).data();
-            $('#confirm-delete').data('id', data.idmukim);
+            $('#confirm-delete').data('id', data.@@@primarykey@@@);
         });
 
         $('#confirm-delete').click(function() {
             const id = $(this).data('id');
 
             $.ajax({
-                url: `{{ url('./template/${id}') }}`,
+                url: `{{ route('@@@folderviewname@@@.destroy', ['id' => ':1']) }}`.replace(':1', id),
                 type: "POST",
                 data: {
                     _method: "DELETE"
                 },
-                success: function(res) {
+                success: (res) => {
                     $("#deleteModal").modal('hide');
-                    toastr.success(res.message)
+                    toastr.success(res.message);
                     aktivitiTable.ajax.reload();
                 },
                 error: (xhr) => {
                     $("#deleteModal").modal('hide');
                     console.error(xhr.responseText);
-                    toastr.error('Error occured!')
+                    toastr.error('Error occured!');
                 }
             });
         });

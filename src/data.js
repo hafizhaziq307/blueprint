@@ -1,10 +1,3 @@
-export const backendFrameworks = [
-    {
-        id: 1,
-        title: 'Laravel 10'
-    },
-];
-
 export const frontendTemplates = [
     // {
     //     id: 1,
@@ -37,8 +30,8 @@ export const inputTypes = [
         id: 4,
         title: 'Textarea'
     },
-    {
-        id: 5,
-        title: 'Select'
-    },
+    // {
+    //     id: 5,
+    //     title: 'Select'
+    // },
 ];

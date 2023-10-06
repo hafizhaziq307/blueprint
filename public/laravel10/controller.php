@@ -3,23 +3,23 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Test;
+use App\Models\@@@modelname@@@;
 use Exception;
 use Yajra\Datatables\Datatables;
 
-class TestController extends Controller
+class @@@modelname@@@Controller extends Controller
 {
     // index
     public function index()
     {
-        return view('test');
+        return view('@@@folderviewname@@@.test');
     }
 
     public function getAll(Request $request)
     {
         try {
             if ($request->ajax()) {
-                $data = Test::get();
+                $data = @@@modelname@@@::get();
 
                 return Datatables::of($data)
                     ->addIndexColumn()
@@ -34,7 +34,7 @@ class TestController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = Test::findOrFail($request->id);
+                $data = @@@modelname@@@::findOrFail($request->id);
 
                 return response()->json($data);
             }
@@ -43,11 +43,14 @@ class TestController extends Controller
         }
     }
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
-        try {
-            Test::findOrFail($id)->insert($request->fields);
+        $validatedData = $request->validate([
+            @@@validationrules@@@
+        ]);
 
+        try {
+            @@@modelname@@@::insert($validatedData);
             return response()->json(['success' => true, 'message' => 'Record added successfully!']);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -57,16 +60,13 @@ class TestController extends Controller
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([
-            'mukim' => 'required|string|max:10',
+            @@@validationrules@@@
         ]);
 
         try {
-            Test::findOrFail($id)->update($validatedData);
-
+            @@@modelname@@@::findOrFail($id)->update($validatedData);
             return response()->json(['success' => true, 'message' => 'Record updated successfully!']);
         } catch (Exception $e) {
-            
-
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -74,8 +74,7 @@ class TestController extends Controller
     public function destroy($id)
     {
         try {
-            Test::findOrFail($id)->delete();
-
+            @@@modelname@@@::findOrFail($id)->delete();
             return response()->json(['success' => true, 'message' => 'Record deleted successfully!']);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
