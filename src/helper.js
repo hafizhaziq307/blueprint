@@ -1,28 +1,12 @@
-export function serializeFormArray(form) {
-    let formData = [];
-    for (let i = 0; i < form.elements.length; i++) {
-        const element = form.elements[i];
-        if (element.name) {
-            let item = {};
-            item.name = element.name;
-            if (element.type === "checkbox" || element.type === "radio") {
-                item.value = element.checked ? element.value : null;
-            } else {
-                item.value = element.value;
-            }
-            formData.push(item);
-        }
+export function serialize(formTag) {
+    let obj = {};
+
+    const formData = new FormData(formTag);
+    for (const [name, value] of formData) {
+        obj[name] = value;
     }
-    return formData;
-}
 
-export function getTimestamp() {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-    const day = String(currentDate.getDate()).padStart(2, '0');
-
-    return `${year}${month}${day}`;
+    return obj;
 }
 
 export function isEmpty(x) {

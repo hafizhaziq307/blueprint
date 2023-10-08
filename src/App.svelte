@@ -7,7 +7,7 @@
     import EditModal from './lib/modals/EditModal.svelte';
     import Card from './lib/Card.svelte';
     import { fields } from './stores.js';
-    import { serializeFormArray, getTimestamp, isEmpty, fetchFileContents, getNamingConventionsForLaravel, isSnakeCase } from './helper.js';
+    import { isEmpty, fetchFileContents, getNamingConventionsForLaravel, isSnakeCase, serialize } from './helper.js';
 
     let backendChecked = null;
     let frontendChecked = null;
@@ -27,7 +27,7 @@
         id: null,
         label: null,
         fieldName: null,
-        inputTypeId: null
+        inputTypeId: inputTypes[0].id
     };
 
     function openCreateModal() {
@@ -64,40 +64,35 @@
     }
 
     function saveData(e) {
-        let obj = {};
-
-        const formData = new FormData(e.target);
-        for (const [name, value] of formData) {
-            obj[name] = value;
-        }
+        let obj = serialize(e.target);
 
         $fields = [...$fields, obj];
 
         closeCreateModal();
 
-        createdRecord = {};
+        createdRecord = {
+            id: null,
+            label: null,
+            fieldName: null,
+            inputTypeId: inputTypes[0].id
+        };
     }
 
-    function updateData() {
-        let obj = {};
+    function updateData(e) {
+        let obj = serialize(e.target);
 
-        const formData = new FormData(e.target);
-        for (const [name, value] of formData) {
-            obj[name] = value;
-        }
+        $fields = $fields.map(x => x.id == obj.id ? obj : x);
 
-        let foundIndex  = $fields.findIndex(x => x.id == obj.id); 
+        closeEditModal();
+    }
 
-        // tbc
+    function deleteData(id) {
+        $fields = $fields.filter(x => x.id !== id);
     }
 
     async function generateCode(e) {
-        let data = {};
-        const formData = new FormData(e.target);
-        for (const [name, value] of formData) {
-            data[name] = value;
-        }
-        data['fields'] = $fields;
+        let obj = serialize(e.target);
+        obj['fields'] = $fields;
 
         if (Object.values(data).some(x => isEmpty(x))) {
             console.log('Please complete all the forms.');
@@ -120,8 +115,6 @@
         generateModel(folderDownload, data.tableName, data.primaryKey, model);
         generateRoute(folderDownload, view, controller);
         generateController(folderDownload, model, view, data.fields, controller);
-
-        // TODO: test later
         generateView(folderDownload, view, data.primaryKey, data.fields, url, data.title);
     }
 
@@ -344,7 +337,7 @@
                                 <button type="button" class="bg-yellow-500 hover:bg-yellow-600 rounded w-16 py-1.5 text-white" on:click={() => openEditModal(field.id)}>
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button type="button" class="bg-red-500 hover:bg-red-600 rounded w-16 py-1.5 text-white" >
+                                <button on:click={() => deleteData(field.id)} type="button" class="bg-red-500 hover:bg-red-600 rounded w-16 py-1.5 text-white" >
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
