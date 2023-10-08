@@ -119,17 +119,17 @@
         // console.log(data.fields);
 
 
-        // await createDir(folderDownload, { dir: BaseDirectory.Download, recursive: true });
+        await createDir(folderDownload, { dir: BaseDirectory.Download, recursive: true });
 
-        // generateModel(folderDownload, data.tableName, data.primaryKey);
-        // generateRoute(folderDownload, view, controller);
-        // generateController(folderDownload, model, view, data.fields);
+        generateModel(folderDownload, data.tableName, data.primaryKey, model);
+        generateRoute(folderDownload, view, controller);
+        generateController(folderDownload, model, view, data.fields, controller);
 
-
+        // TODO: test later
         generateView(folderDownload, view, data.primaryKey, data.fields, url, data.title);
     }
 
-    async function generateController(folderDownload , modelname, folderView, fields) {
+    async function generateController(folderDownload , modelname, folderView, fields, controller) {
         let validationRules = getValidationRules(fields);
         let contents = await fetchFileContents('laravel10/controller.php');
 
@@ -138,18 +138,19 @@
             .replaceAll('@@@folderviewname@@@', folderView)
             .replaceAll('@@@validationrules@@@', validationRules);
 
-        await writeTextFile({ path: `${folderDownload}/controller.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${folderDownload}/${controller}.php`, contents: contents }, { dir: BaseDirectory.Download });
 
     }
 
-    async function generateModel(folderDownload, table, primarykey) {
+    async function generateModel(folderDownload, table, primarykey, model) {
         let contents = await fetchFileContents('laravel10/model.php');
 
         contents = contents
             .replaceAll('@@@tablename@@@', table)
+            .replaceAll('@@@modelname@@@', model)
             .replaceAll('@@@primarykey@@@', primarykey);
 
-        await writeTextFile({ path: `${folderDownload}/model.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${folderDownload}/${model}.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     async function generateRoute(folderDownload, folderView, controller) {
@@ -199,7 +200,7 @@
 
         await createDir(`${folderDownload}/${url}`, { dir: BaseDirectory.Download, recursive: true });
 
-        await writeTextFile({ path: `${folderDownload}/${url}/index.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${folderDownload}/${url}/index.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
     
 

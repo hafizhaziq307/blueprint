@@ -125,13 +125,6 @@
                             </header>
                             <div class="modal-body">
                                 <form>
-                                    <div class="form-row">
-                                        <div class="form-group col-md-6">
-                                            <label class="mb-1">mukim</label>
-                                            <input type="text" class="form-control" placeholder="mukimtitle" name="mukim">
-                                            <div id="mukim-error" class="invalid-feedback"></div>
-                                        </div>
-                                    </div>
                                     @@@htmlInputs@@@
                                 </form>
 
@@ -155,13 +148,6 @@
                             </header>
                             <div class="modal-body">
                                 <form>
-                                    <div class="form-row">
-                                        <div class="form-group col-md-6">
-                                            <label class="mb-1">mukim</label>
-                                            <input type="text" class="form-control" placeholder="mukimtitle" name="mukim">
-                                            <div id="mukim-error" class="invalid-feedback"></div>
-                                        </div>
-                                    </div>
                                     @@@htmlInputs@@@
                                 </form>
 
