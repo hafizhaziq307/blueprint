@@ -96,7 +96,7 @@
                                 </header>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table id="aktiviti-table" class="table table-striped table-hover table-bordered nowrap" style="width: 100%">
+                                        <table id="table" class="table table-striped table-hover table-bordered nowrap" style="width: 100%">
                                             <thead>
                                                 <tr>
                                                     <th>No.</th>
@@ -210,7 +210,7 @@
             "newestOnTop": true,
         };
 
-        const aktivitiTable = $('#aktiviti-table').DataTable({
+        const tbl = $('#table').DataTable({
             processing: true,
             serverSide: true,
             scrollX: true,
@@ -272,7 +272,7 @@
                 success: (res) => {
                     $("#createModal").modal('hide');
                     toastr.success(res.message);
-                    aktivitiTable.ajax.reload();
+                    tbl.ajax.reload();
                 },
                 error: (xhr) => {
                     if (xhr.status == 422) {
@@ -290,12 +290,12 @@
             });
         });
 
-        $("#aktiviti-table tbody").on("click", ".editBtn", function() {
+        $("#table tbody").on("click", ".editBtn", function() {
             // reset error validation
             $("#editModal form .form-control").removeClass("is-invalid");
             $("#editModal form .invalid-feedback").text("");
 
-            const data = aktivitiTable.row($(this).parents("tr")).data();
+            const data = tbl.row($(this).parents("tr")).data();
             $('#updateBtn').data('id', data.@@@primarykey@@@);
 
             $.ajax({
@@ -334,7 +334,7 @@
                 success: (res) => {
                     $("#editModal").modal('hide');
                     toastr.success(res.message);
-                    aktivitiTable.ajax.reload();
+                    tbl.ajax.reload();
                 },
                 error: (xhr) => {
                     if (xhr.status == 422) {
@@ -352,8 +352,8 @@
             });
         });
 
-        $("#aktiviti-table tbody").on('click', '.deleteBtn', function() {
-            const data = aktivitiTable.row($(this).parents("tr")).data();
+        $("#table tbody").on('click', '.deleteBtn', function() {
+            const data = tbl.row($(this).parents("tr")).data();
             $('#confirm-delete').data('id', data.@@@primarykey@@@);
         });
 
@@ -369,7 +369,7 @@
                 success: (res) => {
                     $("#deleteModal").modal('hide');
                     toastr.success(res.message);
-                    aktivitiTable.ajax.reload();
+                    tbl.ajax.reload();
                 },
                 error: (xhr) => {
                     $("#deleteModal").modal('hide');

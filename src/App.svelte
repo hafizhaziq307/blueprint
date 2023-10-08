@@ -109,15 +109,11 @@
             return;
         }
 
-        let model = getNamingConventionsForLaravel(data.tableName, "model");
-        let view = getNamingConventionsForLaravel(data.tableName, "view");
-        let controller = getNamingConventionsForLaravel(data.tableName, "controller");
-        let url = getNamingConventionsForLaravel(data.tableName, "url");
-
+        const model = getNamingConventionsForLaravel(data.tableName, "model");
+        const view = getNamingConventionsForLaravel(data.tableName, "view");
+        const controller = getNamingConventionsForLaravel(data.tableName, "controller");
+        const url = getNamingConventionsForLaravel(data.tableName, "url");
         const folderDownload = `${Math.floor(Date.now() / 1000)}-${data.title}`;
-
-        // console.log(data.fields);
-
 
         await createDir(folderDownload, { dir: BaseDirectory.Download, recursive: true });
 
@@ -166,25 +162,30 @@
     async function generateView(folderDownload, folderView, primaryKey, fields, url, title) {
         let contents = await fetchFileContents('laravel10/view.blade.php');
 
-        let thead = ``;
+        let thead = [];
         for (const field of fields) {
-            thead += `<th>${field.label}</th>\n`;
+            const temp = `<th>${field.label}</th>`;
+            thead.push(temp);
         }
+        thead = `${thead.join('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t')}`;
 
         let tbody = [];
         for (const field of fields) {
-            const temp = `\t\t\t\t{
-                    data: "${field.fieldName}",
-                    className: "text-center",
-                },`;
+            const temp = `{
+                \tdata: "${field.fieldName}",
+                \tclassName: "text-center",
+            \t},`;
             tbody.push(temp);
         }
-        tbody = `${tbody.join('\n')}`;
+        tbody = `${tbody.join('\r\n\t\t\t\t')}`;
 
-        let editInputs = ``;
+        let editInputs = [];
         for (const field of fields) {
-            editInputs += `$("#editModal [name='${fields.fieldName}']").val(res.${fields.fieldName})\n`;
+            const temp = `$("#editModal [name='${field.fieldName}']").val(res.${field.fieldName});`;
+            editInputs.push(temp);
         }
+        editInputs = `${editInputs.join('\r\n\t\t\t\t\t')}`;
+
 
         let htmlInputs = getHtmlInputs(fields);
 
@@ -205,35 +206,44 @@
     
 
     function getHtmlInputs(fields) {
-        let data = ``;
-
+        let data = [];
+ 
         for (const field of fields) {
             if (field.inputTypeId == 1) { // text
-                data += `<div class="form-group">\n\t<label class="mb-1">${field.label}</label>\n\t<input type="text" class="form-control" placeholder="${field.label}" name="${field.fieldName}">\n\t<div id="${field.fieldName}-error" class="invalid-feedback"></div></div>\n`;
+                const temp = `<div class="form-group">
+                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                    \t\t\t\t\t<input type="text" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
+                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                \t\t\t\t\t</div>`;
+                data.push(temp);
             } 
             else if (field.inputTypeId == 2) { // number
-                data += `<div class="form-group">
-                    <label class="mb-1">${field.label}</label>
-                    <input type="number" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
-                    <div id="${field.fieldName}-error" class="invalid-feedback"></div>
-                </div>\n`;
+                const temp = `<div class="form-group">
+                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                    \t\t\t\t\t<input type="number" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
+                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                \t\t\t\t\t</div>`;
+                data.push(temp);
             } 
             else if (field.inputTypeId == 3) { // date
-                data += `<div class="form-group">
-                    <label class="mb-1">${field.label}</label>
-                    <input type="date" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
-                    <div id="${field.fieldName}-error" class="invalid-feedback"></div>
-                </div>\n`;
+                const temp = `<div class="form-group">
+                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                    \t\t\t\t\t<input type="date" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
+                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                \t\t\t\t\t</div>`;
+                data.push(temp);
             } 
             else if (field.inputTypeId == 4) { // textarea
-                data += `<div class="form-group">
-                    <label class="mb-1">${field.label}</label>
-                    <textarea class="form-control" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
-                    <div id="${field.fieldName}-error" class="invalid-feedback"></div>
-                </div>\n`;
+                const temp = `<div class="form-group">
+                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                    \t\t\t\t\t<textarea class="form-control" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
+                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                \t\t\t\t\t</div>`;
+                data.push(temp);
             } 
         }
-
+        
+        data = `${data.join('\r\n\t\t\t\t\t\t\t\t\t')}`;
         return data;
     }
 
@@ -244,16 +254,16 @@
             let str;
 
             if (field.inputTypeId == 1) {
-                str = `'${field.fieldName}' => 'required|string',\n`;
+                str = `'${field.fieldName}' => 'required|string',\r\n`;
             } 
             else if (field.inputTypeId == 2) {
-                str = `'${field.fieldName}' => 'required|numeric',\n`;
+                str = `'${field.fieldName}' => 'required|numeric',\r\n`;
             } 
             else if (field.inputTypeId == 3) {
-                str = `'${field.fieldName}' => 'required|date',\n`;
+                str = `'${field.fieldName}' => 'required|date',\r\n`;
             } 
             else if (field.inputTypeId == 4) {
-                str = `'${field.fieldName}' => 'required|string',\n`;
+                str = `'${field.fieldName}' => 'required|string',\r\n`;
             } 
     
             data += str;
