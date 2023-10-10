@@ -11,6 +11,7 @@
     "watch": "npx tailwindcss -i ./src/assets/css/input.css -o ./src/assets/css/output.css --watch --minify"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.4.2",
     "@tauri-apps/api": "^1.4.0"
   },
   "devDependencies": {
