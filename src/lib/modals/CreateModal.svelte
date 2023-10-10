@@ -43,7 +43,6 @@
             </div>
 
             <div class="text-right">
-                <input type="hidden" name="id" value={Math.floor(Date.now() / 1000)}>
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 leading-snug px-4 py-2 rounded-md text-md text-white font-semibold mt-4 text-sm">Save</button>
             </div>
         </form>

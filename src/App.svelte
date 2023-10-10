@@ -65,6 +65,9 @@
 
     function saveData(e) {
         let obj = serialize(e.target);
+        obj['id'] = Math.floor(Date.now() / 1000);
+
+        console.log(obj.id);
 
         $fields = [...$fields, obj];
 
@@ -94,28 +97,28 @@
         let obj = serialize(e.target);
         obj['fields'] = $fields;
 
-        if (Object.values(data).some(x => isEmpty(x))) {
+        if (Object.values(obj).some(x => isEmpty(x))) {
             console.log('Please complete all the forms.');
             return;
         }
 
-        if (!isSnakeCase(data.tableName)) {
+        if (!isSnakeCase(obj.tableName)) {
             console.log('table name must be in snake case');
             return;
         }
 
-        const model = getNamingConventionsForLaravel(data.tableName, "model");
-        const view = getNamingConventionsForLaravel(data.tableName, "view");
-        const controller = getNamingConventionsForLaravel(data.tableName, "controller");
-        const url = getNamingConventionsForLaravel(data.tableName, "url");
-        const folderDownload = `${Math.floor(Date.now() / 1000)}-${data.title}`;
+        const model = getNamingConventionsForLaravel(obj.tableName, "model");
+        const view = getNamingConventionsForLaravel(obj.tableName, "view");
+        const controller = getNamingConventionsForLaravel(obj.tableName, "controller");
+        const url = getNamingConventionsForLaravel(obj.tableName, "url");
+        const folderDownload = `${Math.floor(Date.now() / 1000)}-${obj.title}`;
 
         await createDir(folderDownload, { dir: BaseDirectory.Download, recursive: true });
 
-        generateModel(folderDownload, data.tableName, data.primaryKey, model);
+        generateModel(folderDownload, obj.tableName, obj.primaryKey, model);
         generateRoute(folderDownload, view, controller);
-        generateController(folderDownload, model, view, data.fields, controller);
-        generateView(folderDownload, view, data.primaryKey, data.fields, url, data.title);
+        generateController(folderDownload, model, view, obj.fields, controller);
+        generateView(folderDownload, view, obj.primaryKey, obj.fields, url, obj.title);
     }
 
     async function generateController(folderDownload , modelname, folderView, fields, controller) {
