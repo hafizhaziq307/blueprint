@@ -250,7 +250,7 @@
 
                         <button type="button" class="btn btn-danger deleteBtn" data-toggle="modal" data-target="#deleteModal">
                             <i class="fas fa-trash"></i>
-                            Padam 
+                            Delete 
                         </button>`;
                     }
                 },

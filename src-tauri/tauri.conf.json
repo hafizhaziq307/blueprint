@@ -12,13 +12,14 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true,
       "fs": {
+          "writeFile": true,
         "readFile": true,
-        "writeFile": true,
-        "readDir": true,
-        "exists": true,
+        "createDir": true,
         "scope": ["**"]
+    },
+    "path": {
+        "all": true
     },
       "shell": {
         "open": true
