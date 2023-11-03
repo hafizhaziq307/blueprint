@@ -12,7 +12,7 @@ class @@@modelname@@@Controller extends Controller
     // index
     public function index()
     {
-        return view('@@@folderviewname@@@.test');
+        return view('@@@folderviewname@@@.index');
     }
 
     public function getAll(Request $request)
