@@ -126,11 +126,12 @@
                             <div class="modal-body">
                                 <form>
                                     @@@htmlInputs@@@
+
+                                    <div class="text-right">
+                                        <button type="button" class="btn btn-primary" id="saveBtn">Save</button>
+                                    </div>
                                 </form>
 
-                                <div class="text-right">
-                                    <button type="button" class="btn btn-primary" id="saveBtn">Save</button>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -148,23 +149,25 @@
                             </header>
                             <div class="modal-body">
                                 <form>
-                                    @@@htmlInputs@@@
-                                </form>
+                                    @method('PATCH')
 
-                                <div class="text-right">
-                                    <button type="button" class="btn btn-primary" id="updateBtn">Update</button>
-                                </div>
+                                    @@@htmlInputs@@@
+
+                                    <div class="text-right">
+                                        <button type="button" class="btn btn-primary" id="updateBtn">Update</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- delete modal -->
-                <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal fade" id="deleteModal">
                     <div class="modal-dialog" role="document">
-                        <div class="modal-content">
+                        <form class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="deleteModalLabel">Delete Item</h5>
+                                <h5 class="modal-title">Delete Item</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -176,7 +179,7 @@
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                                 <button type="button" class="btn btn-danger" id="confirm-delete">Delete</button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </section>
@@ -320,9 +323,6 @@
             const id = $(this).data('id');
             const fields = $("#editModal form").serializeArray();
 
-            fieldObj = {
-                _method: "PATCH"
-            };
             for (const field of fields) {
                 fieldObj[field.name] = field.value;
             }
@@ -354,28 +354,24 @@
 
         $("#table tbody").on('click', '.deleteBtn', function() {
             const data = tbl.row($(this).parents("tr")).data();
-            $('#confirm-delete').data('id', data.@@@primarykey@@@);
-        });
 
-        $('#confirm-delete').click(function() {
-            const id = $(this).data('id');
+            $("#deleteModal").modal('show');
 
-            $.ajax({
-                url: `{{ route('@@@folderviewname@@@.destroy', ['id' => ':1']) }}`.replace(':1', id),
-                type: "POST",
-                data: {
-                    _method: "DELETE"
-                },
-                success: (res) => {
-                    $("#deleteModal").modal('hide');
-                    toastr.success(res.message);
-                    tbl.ajax.reload();
-                },
-                error: (xhr) => {
-                    $("#deleteModal").modal('hide');
-                    console.error(xhr.responseText);
-                    toastr.error('Error occured!');
-                }
+            $('#deleteModal #confirm-delete').click(function() {
+                $.ajax({
+                    url: `{{ route('@@@folderviewname@@@.destroy', ['id' => ':1']) }}`.replace(':1', data.@@@primarykey@@@),
+                    type: "POST",
+                    success: (res) => {
+                        $("#deleteModal").modal('hide');
+                        toastr.success(res.message);
+                        tbl.ajax.reload();
+                    },
+                    error: (xhr) => {
+                        $("#deleteModal").modal('hide');
+                        console.error(xhr.responseText);
+                        toastr.error('Error occured!');
+                    }
+                });
             });
         });
     </script>
