@@ -1,7 +1,7 @@
 export const frontendTemplates = [
     {
         id: 1,
-        title: 'AdminLTE 4'
+        title: 'AdminLTE 3'
     },
 ];
 

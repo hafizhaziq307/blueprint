@@ -50,7 +50,7 @@ class @@@modelname@@@Controller extends Controller
         ]);
 
         try {
-            @@@modelname@@@::insert($validatedData);
+            @@@modelname@@@::create($validatedData);
             return response()->json(['success' => true, 'message' => 'Record added successfully!']);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
