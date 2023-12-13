@@ -44,8 +44,12 @@
             <div class="sidebar">
 
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <i class="fas fa-user-circle text-gray img-circle elevation-2" style="font-size: 34px;"></i>
+                    </div>
+
                     <div class="info">
-                        <a href="#" class="d-block">Alexander Pierce</a>
+                        <a href="#" class="d-block">Hafiz Haziq</a>
                     </div>
                 </div>
 
@@ -87,7 +91,7 @@
                                             <h3 class="card-title">@@@crudtitle@@@</h3>
                                         </div>
                                         <div class="col-sm-2">
-                                            <button type="button" class="btn btn-primary float-sm-right" data-toggle="modal" data-target="#createModal" id="addBtn">
+                                            <button type="button" class="btn btn-primary float-sm-right" data-toggle="modal" data-target="#addModal" id="addBtn">
                                                 <i class="fas fa-plus"></i>
                                                 <span>Add</span>
                                             </button>
@@ -114,7 +118,7 @@
                 </div>
 
                 <!-- create modal -->
-                <div class="modal fade" id="createModal">
+                <div class="modal fade" id="addModal">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <header class="modal-header">
@@ -216,7 +220,6 @@
         const tbl = $('#table').DataTable({
             processing: true,
             serverSide: true,
-            scrollX: true,
             language: {
                 search: "Search:",
                 lengthMenu: "Total Record/ Page: _MENU_",
@@ -261,19 +264,16 @@
         });
 
         $('#saveBtn').click(function() {
-            const fields = $("#createModal form").serializeArray();
-
-            fieldObj = {};
-            for (const field of fields) {
-                fieldObj[field.name] = field.value;
-            }
+            const formData = new FormData(document.querySelector("#addModal form"));
 
             $.ajax({
                 url: `{{ route('@@@folderviewname@@@.store') }}`,
                 type: "POST",
-                data: fieldObj,
+                data: formData,
+                contentType: false,
+                processData: false,
                 success: (res) => {
-                    $("#createModal").modal('hide');
+                    $("#addModal").modal('hide');
                     toastr.success(res.message);
                     tbl.ajax.reload();
                 },
@@ -281,12 +281,12 @@
                     if (xhr.status == 422) {
                         const errors = xhr.responseJSON.errors;
                         for (const [key, value] of Object.entries(errors)) {
-                            $(`#createModal [name="${key}"]`).addClass("is-invalid");
-                            $(`#createModal #${key}-error`).text(value);
+                            $(`#addModal [name="${key}"]`).addClass("is-invalid");
+                            $(`#addModal #${key}-error`).text(value);
                         }
                         return;
                     } 
-                    $("#createModal").modal('hide');
+                    $("#addModal").modal('hide');
                     console.error(xhr.responseText);
                     toastr.error('Error occured!');
                 }
@@ -321,16 +321,14 @@
 
         $('#updateBtn').click(function() {
             const id = $(this).data('id');
-            const fields = $("#editModal form").serializeArray();
-
-            for (const field of fields) {
-                fieldObj[field.name] = field.value;
-            }
+            const formData = new FormData(document.querySelector("#editModal form"));
 
             $.ajax({
                 url: `{{ route('@@@folderviewname@@@.update', ['id' => ':1']) }}`.replace(':1', id),
                 type: "POST",
-                data: fieldObj,
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: (res) => {
                     $("#editModal").modal('hide');
                     toastr.success(res.message);
