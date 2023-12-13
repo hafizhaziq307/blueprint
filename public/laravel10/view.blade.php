@@ -258,12 +258,12 @@
                     className: "text-center",
                     render: () => {
                         return `
-                        <button type="button" class="btn btn-info editBtn">
+                        <button type="button" class="btn btn-sm btn-info editBtn">
                             <i class="fas fa-pencil-alt"></i>
                             Edit
                         </button>
 
-                        <button type="button" class="btn btn-danger deleteBtn" data-toggle="modal" data-target="#deleteModal">
+                        <button type="button" class="btn btn-sm btn-danger deleteBtn" data-toggle="modal" data-target="#deleteModal">
                             <i class="fas fa-trash"></i>
                             Delete 
                         </button>`;

@@ -57,3 +57,14 @@ export function getNamingConventionsForLaravel(value, type) {
 export function isSnakeCase(value) {
     return /^[a-z]+(_[a-z]+)*$/.test(value);
 }
+
+
+export function capitalize(text) {
+    const arr_text = text.toLowerCase().split(" ");
+
+    for (let i = 0; i < arr_text.length; i++) {
+        arr_text[i] = arr_text[i][0].toUpperCase() + arr_text[i].substr(1);
+    }
+
+    return arr_text.join(" ");
+};

@@ -9,7 +9,7 @@
     import EditModal from './lib/modals/EditModal.svelte';
     import Card from './lib/Card.svelte';
     import { fields } from './stores.js';
-    import { isEmpty, fetchFileContents, getNamingConventionsForLaravel, isSnakeCase, serialize } from './helper.js';
+    import { isEmpty, fetchFileContents, getNamingConventionsForLaravel, isSnakeCase, serialize, capitalize } from './helper.js';
 
     let backendChecked = null;
     let frontendChecked = null;
@@ -212,7 +212,7 @@
         let htmlInputs = getHtmlInputs(fields);
 
         contents = contents
-            .replaceAll('@@@crudtitle@@@', title.toUpperCase())
+            .replaceAll('@@@crudtitle@@@', capitalize(title))
             .replaceAll('@@@thead@@@', thead)
             .replaceAll('@@@tbody@@@', tbody)
             .replaceAll('@@@primarykey@@@', primaryKey)
