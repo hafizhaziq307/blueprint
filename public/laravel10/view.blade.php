@@ -108,18 +108,16 @@
                                 </header>
                                 
                                 <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table id="table" class="table table-sm table-striped table-hover table-bordered nowrap" style="width: 100%">
-                                            <thead>
-                                                <tr>
-                                                    <th>No.</th>
-                                                    @@@thead@@@
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
+                                    <table id="table" class="table table-sm table-striped table-hover table-bordered nowrap" style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <th>No.</th>
+                                                @@@thead@@@
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -131,7 +129,7 @@
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <header class="modal-header">
-                                <h4 class="modal-title">Add</h4>
+                                <h5 class="modal-title">Add</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -155,7 +153,7 @@
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <header class="modal-header">
-                                <h4 class="modal-title">Update</h4>
+                                <h5 class="modal-title">Update</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -179,12 +177,12 @@
                 <div class="modal fade" id="deleteModal">
                     <div class="modal-dialog" role="document">
                         <form class="modal-content">
-                            <div class="modal-header">
+                            <header class="modal-header">
                                 <h5 class="modal-title">Delete Item</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
-                            </div>
+                            </header>
                             <div class="modal-body">
                                 Are you sure you want to delete this item?
                             </div>
@@ -243,7 +241,7 @@
                 url: "{{ route('@@@folderviewname@@@.getAll') }}",
                 type: "POST",
                 error: (xhr) => {
-                    console.error(xhr.responseText);
+                    console.error(JSON.parse(xhr.responseText).error);
                 }
             },
             columns: [{
@@ -270,6 +268,10 @@
                     }
                 },
             ],
+            initComplete: function () {
+                // this.api().buttons().container().appendTo('#table_wrapper .col-md-6:eq(0)'); // alternative for dom:
+                this.wrap("<div style='overflow:auto; width:100%;position:relative;'></div>"); // aternative for scrollX:        
+            }
         });
 
         $('#saveBtn').click(function() {
@@ -296,7 +298,7 @@
                         return;
                     } 
                     $("#addModal").modal('hide');
-                    console.error(xhr.responseText);
+                    console.error(JSON.parse(xhr.responseText).error);
                     toastr.error('Error occured!');
                 }
             });
@@ -323,7 +325,7 @@
                     @@@editInputs@@@
                 },
                 error: (xhr) => {
-                    console.error(xhr.responseText);
+                    console.error(JSON.parse(xhr.responseText).error);
                 }
             });
         });
@@ -353,7 +355,7 @@
                         return;
                     } 
                     $("#editModal").modal('hide');
-                    console.error(xhr.responseText);
+                    console.error(JSON.parse(xhr.responseText).error);
                     toastr.error('Error occured!');
                 }
             });
@@ -375,7 +377,7 @@
                     },
                     error: (xhr) => {
                         $("#deleteModal").modal('hide');
-                        console.error(xhr.responseText);
+                        console.error(JSON.parse(xhr.responseText).error);
                         toastr.error('Error occured!');
                     }
                 });

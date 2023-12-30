@@ -31,23 +31,18 @@ export function fetchFileContents(path) {
 
 export function getNamingConventionsForLaravel(value, type) {
     switch (type) {
-        case "model": // PascalCase
-            return value
-                .replace(/[-_](.)/g, (_, char) => char.toUpperCase())
-                .replace(/^(.)/, (char) => char.toUpperCase());
+        case "model":
+            return toPascalCase(value);
 
         case "view": // snake_case
-            return value.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+            return toSnakeCase(value);
 
-        case "controller": // PascalCase
-            let str = value
-                .replace(/[-_](.)/g, (_, char) => char.toUpperCase())
-                .replace(/^(.)/, (char) => char.toUpperCase());
-
+        case "controller":
+            let str = toPascalCase(value);
             return `${str}Controller`;
 
         case "url": // kebab-case
-            return value.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+            return toKebabCase(value);
 
         default:
             return null;
@@ -58,13 +53,28 @@ export function isSnakeCase(value) {
     return /^[a-z]+(_[a-z]+)*$/.test(value);
 }
 
+function toPascalCase(string) {
+    return string
+        .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+        .map(x => x.charAt(0).toUpperCase() + x.slice(1).toLowerCase())
+        .join('');
 
-export function capitalize(text) {
-    const arr_text = text.toLowerCase().split(" ");
+}
 
-    for (let i = 0; i < arr_text.length; i++) {
-        arr_text[i] = arr_text[i][0].toUpperCase() + arr_text[i].substr(1);
-    }
+function toSnakeCase(string) {
+    return string
+        .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+        .map(x => x.toLowerCase())
+        .join('_');
+}
 
-    return arr_text.join(" ");
+function toKebabCase(string) {
+    return string
+        .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+        .map(x => x.toLowerCase())
+        .join('-');
+}
+
+export function capitalize(string) {
+    return string ? string.charAt(0).toUpperCase() + string.slice(1).toLowerCase() : '';
 };

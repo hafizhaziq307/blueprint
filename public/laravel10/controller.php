@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\@@@modelname@@@;
 use Exception;
+use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 
 class @@@modelname@@@Controller extends Controller
 {
-    // index
     public function index()
     {
         return view('@@@folderviewname@@@.index');
@@ -51,7 +50,8 @@ class @@@modelname@@@Controller extends Controller
 
         try {
             @@@modelname@@@::create($validatedData);
-            return response()->json(['success' => true, 'message' => 'Record added successfully!']);
+
+            return response()->json(['message' => 'Record added successfully!']);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -65,7 +65,8 @@ class @@@modelname@@@Controller extends Controller
 
         try {
             @@@modelname@@@::findOrFail($id)->update($validatedData);
-            return response()->json(['success' => true, 'message' => 'Record updated successfully!']);
+
+            return response()->json(['message' => 'Record updated successfully!']);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -75,7 +76,8 @@ class @@@modelname@@@Controller extends Controller
     {
         try {
             @@@modelname@@@::findOrFail($id)->delete();
-            return response()->json(['success' => true, 'message' => 'Record deleted successfully!']);
+
+            return response()->json(['message' => 'Record deleted successfully!']);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
