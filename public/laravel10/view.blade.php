@@ -177,6 +177,7 @@
                 <div class="modal fade" id="deleteModal">
                     <div class="modal-dialog" role="document">
                         <form class="modal-content">
+                            @method('DELETE')
                             <header class="modal-header">
                                 <h5 class="modal-title">Delete Item</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -363,6 +364,7 @@
 
         $("#table tbody").on('click', '.deleteBtn', function() {
             const data = tbl.row($(this).parents("tr")).data();
+            const formData = new FormData(document.querySelector("#editModal form"));
 
             $("#deleteModal").modal('show');
 
@@ -370,6 +372,7 @@
                 $.ajax({
                     url: `{{ route('@@@folderviewname@@@.destroy', ['id' => ':1']) }}`.replace(':1', data.@@@primarykey@@@),
                     type: "POST",
+                    data: formData,
                     success: (res) => {
                         $("#deleteModal").modal('hide');
                         toastr.success(res.message);
