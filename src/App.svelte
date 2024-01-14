@@ -2,7 +2,8 @@
     import { writeTextFile, readTextFile, BaseDirectory, createDir } from '@tauri-apps/api/fs';
     import { downloadDir } from '@tauri-apps/api/path';
     import { invoke } from "@tauri-apps/api/tauri";
-    import Swal from 'sweetalert2'
+    import Swal from 'sweetalert2';
+    import { imask } from '@imask/svelte';
 
     import { frontendTemplates, inputTypes } from "./data.js";
     import CreateModal from './lib/modals/CreateModal.svelte';
@@ -10,6 +11,10 @@
     import Card from './lib/Card.svelte';
     import { fields } from './stores.js';
     import { isEmpty, fetchFileContents, getNamingConventionsForLaravel, isSnakeCase, serialize, capitalize } from './helper.js';
+
+    const snakeCaseOptions = {
+        mask: /^[A-Za-z0-9_]*$/,
+    };
 
     let backendChecked = null;
     let frontendChecked = null;
@@ -350,12 +355,12 @@
                 
                 <div>
                     <p class="block mb-1 text-sm font-medium text-gray-900">Table</p>
-                    <input type="text" name="tableName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="table" bind:value={tableName} required>
+                    <input type="text" name="tableName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="table" bind:value={tableName} use:imask={snakeCaseOptions} required>
                 </div>
     
                 <div>
                     <p class="block mb-1 text-sm font-medium text-gray-900">Primary Key</p>
-                    <input type="text" name="primaryKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="primary key" bind:value={primaryKey} required>
+                    <input type="text" name="primaryKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="primary key" bind:value={primaryKey} use:imask={snakeCaseOptions} required>
                 </div>
             </div>
         </Card>
@@ -382,7 +387,7 @@
                             <td class="py-2 px-4 text-left whitespace-nowrap">
                                 {field.label}
                             </td>
-                            <td class="py-2 px-4 text-left">
+                            <td class="py-2 px-4 text-left" use:imask={snakeCaseOptions}>
                                 {field.fieldName}
                             </td>
                             <td class="py-2 px-4 text-center">

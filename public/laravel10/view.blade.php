@@ -86,8 +86,7 @@
                         <div class="col-12">
                             <div class="card">
                                 <header class="card-header text-right">
-                                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
-                                        data-target="#addModal">
+                                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addModal">
                                         <span class="mr-1">Tambah Rekod Baru</span>
                                         <i class="fas fa-plus"></i>
                                     </button>
@@ -100,8 +99,7 @@
                                 <header class="card-header">
                                     <h3 class="card-title">@@@crudtitle@@@</h3>
                                     <div class="card-tools">
-                                        <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                            title="Collapse">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
                                             <i class="fas fa-minus"></i>
                                         </button>
                                     </div>
@@ -111,9 +109,9 @@
                                     <table id="table" class="table table-sm table-striped table-hover table-bordered nowrap" style="width: 100%">
                                         <thead>
                                             <tr>
-                                                <th>No.</th>
+                                                <th>Bil.</th>
                                                 @@@thead@@@
-                                                <th>Action</th>
+                                                <th>Tindakan</th>
                                             </tr>
                                         </thead>
                                         <tbody></tbody>
@@ -127,70 +125,67 @@
                 <!-- create modal -->
                 <div class="modal fade" id="addModal">
                     <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
+                        <form class="modal-content">
                             <header class="modal-header">
-                                <h5 class="modal-title">Add</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
+                                <h5 class="modal-title">Tambah Rekod</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    &times;
                                 </button>
                             </header>
+                            
                             <div class="modal-body">
-                                <form>
-                                    @@@htmlInputs@@@
-
-                                    <div class="text-right">
-                                        <button type="button" class="btn btn-primary" id="saveBtn">Save</button>
-                                    </div>
-                                </form>
-
+                                @@@htmlInputs@@@
                             </div>
-                        </div>
+                            
+                            <footer class="modal-footer">
+                                <button type="button" class="btn btn-primary">Simpan</button>
+                            </footer>
+                        </form>
                     </div>
                 </div>
 
                 <!-- edit modal  -->
                 <div class="modal fade" id="editModal">
                     <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
+                        <form class="modal-content">
+                            @method('PATCH')
                             <header class="modal-header">
-                                <h5 class="modal-title">Update</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
+                                <h5 class="modal-title">Kemaskini Rekod</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    &times;
                                 </button>
                             </header>
+
                             <div class="modal-body">
-                                <form>
-                                    @method('PATCH')
-
-                                    @@@htmlInputs@@@
-
-                                    <div class="text-right">
-                                        <button type="button" class="btn btn-primary" id="updateBtn">Update</button>
-                                    </div>
-                                </form>
+                                @@@htmlInputs@@@
                             </div>
-                        </div>
+                            
+                            <footer class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Kemaskini</button>
+                            </footer>
+                        </form>
                     </div>
                 </div>
 
                 <!-- delete modal -->
                 <div class="modal fade" id="deleteModal">
-                    <div class="modal-dialog" role="document">
+                    <div class="modal-dialog">
                         <form class="modal-content">
                             @method('DELETE')
                             <header class="modal-header">
-                                <h5 class="modal-title">Delete Item</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
+                                <h5 class="modal-title">Padam Rekod</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    &times;
                                 </button>
                             </header>
+
                             <div class="modal-body">
-                                Are you sure you want to delete this item?
+                                Anda pasti ingin memadam rekod tersebut?
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-danger" id="confirm-delete">Delete</button>
-                            </div>
+
+                            <footer class="modal-footer">
+                                <button type="submit" class="btn btn-danger">Padam</button>
+                            </footer>
                         </form>
                     </div>
                 </div>
@@ -202,7 +197,7 @@
             <div class="float-right d-none d-sm-block">
                 <b>Version</b> 1.0.0
             </div>
-            <strong>Copyright &copy; 2023 <a href="#">System name</a>.</strong> All rights reserved.
+            <strong>Hakcipta Terpelihara &copy; {{ now()->year }} <a href="#">System name</a>.</strong>
         </footer>
     </div>
 
@@ -226,17 +221,29 @@
         };
 
         const tbl = $('#table').DataTable({
+            buttons: ['pageLength'],
             processing: true,
             serverSide: true,
+            lengthChange: false,
+            lengthMenu: [
+                [10, 25, 50, -1],
+                [10, 25, 50, 'Semua']
+            ],
             language: {
-                search: "Search:",
-                lengthMenu: "Total Record/ Page: _MENU_",
-                info: "Record _START_ to _END_ / _TOTAL_ Records",
+                search: "Carian Rekod:",
+                lengthMenu: "Jumlah Rekod / Page: _MENU_",
+                buttons: {
+                    pageLength: {
+                        _: "Papar %d rekod",
+                        '-1': "Papar semua rekod"
+                    }
+                },
+                info: "Rekod _START_ hingga _END_ / _TOTAL_ Rekod",
                 paginate: {
                     next: '<i class="fas fa-arrow-right"></i>',
                     previous: '<i class="fas fa-arrow-left"></i>'
                 },
-                emptyTable: "No Records."
+                emptyTable: "Tiada rekod."
             },
             ajax: {
                 url: "{{ route('@@@folderviewname@@@.getAll') }}",
@@ -259,38 +266,39 @@
                         return `
                         <button type="button" class="btn btn-sm btn-info editBtn">
                             <i class="fas fa-pencil-alt"></i>
-                            Edit
+                            Kemaskini
                         </button>
 
                         <button type="button" class="btn btn-sm btn-danger deleteBtn" data-toggle="modal" data-target="#deleteModal">
                             <i class="fas fa-trash"></i>
-                            Delete 
+                            Padam 
                         </button>`;
                     }
                 },
             ],
             initComplete: function () {
-                // this.api().buttons().container().appendTo('#table_wrapper .col-md-6:eq(0)'); // alternative for dom:
+                this.api().buttons().container().appendTo('#table_wrapper .col-md-6:eq(0)'); // alternative for dom:
                 this.wrap("<div style='overflow:auto; width:100%;position:relative;'></div>"); // aternative for scrollX:        
             }
         });
 
-        $('#saveBtn').click(function() {
-            const formData = new FormData(document.querySelector("#addModal form"));
+        $("#addModal form").on('submit', function() {
+            const formData = new FormData($("#addModal form"));
 
             $.ajax({
                 url: `{{ route('@@@folderviewname@@@.store') }}`,
                 type: "POST",
                 data: formData,
-                contentType: false,
                 processData: false,
+                contentType: false,
                 success: (res) => {
-                    $("#addModal").modal('hide');
                     toastr.success(res.message);
                     tbl.ajax.reload();
                 },
                 error: (xhr) => {
                     if (xhr.status == 422) {
+                        $(".is-invalid").removeClass("is-invalid");
+
                         const errors = xhr.responseJSON.errors;
                         for (const [key, value] of Object.entries(errors)) {
                             $(`#addModal [name="${key}"]`).addClass("is-invalid");
@@ -298,9 +306,11 @@
                         }
                         return;
                     } 
-                    $("#addModal").modal('hide');
                     console.error(JSON.parse(xhr.responseText).error);
                     toastr.error('Error occured!');
+                },
+                complete: () => {
+                    $("#addModal").modal('hide');
                 }
             });
         });
@@ -311,7 +321,6 @@
             $("#editModal form .invalid-feedback").text("");
 
             const data = tbl.row($(this).parents("tr")).data();
-            $('#updateBtn').data('id', data.@@@primarykey@@@);
 
             $.ajax({
                 url: "{{ route('@@@folderviewname@@@.getFirst') }}",
@@ -324,64 +333,70 @@
                     $("#editModal").modal('show');
 
                     @@@editInputs@@@
+                    
+                    $("#editModal form").on('submit', function() {
+                        const formData = new FormData($("#editModal form"));
+
+                        $.ajax({
+                            url: `{{ route('@@@folderviewname@@@.update', ['id' => ':1']) }}`.replace(':1', data.@@@primarykey@@@),
+                            type: "POST",
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: (sub_res) => {
+                                toastr.success(sub_res.message);
+                                tbl.ajax.reload();
+                            },
+                            error: (xhr) => {
+                                if (xhr.status == 422) {
+                                    $(".is-invalid").removeClass("is-invalid");
+            
+                                    const errors = xhr.responseJSON.errors;
+                                    for (const [key, value] of Object.entries(errors)) {
+                                        $(`#editModal [name="${key}"]`).addClass("is-invalid");
+                                        $(`#editModal #${key}-error`).text(value);
+                                    }
+                                    return;
+                                } 
+                                console.error(JSON.parse(xhr.responseText).error);
+                                toastr.error('Error occured!');
+                            },
+                            complete: () => {
+                                $("#editModal").modal('hide');
+                            }
+                        });
+                    });
                 },
                 error: (xhr) => {
                     console.error(JSON.parse(xhr.responseText).error);
-                }
-            });
-        });
-
-        $('#updateBtn').click(function() {
-            const id = $(this).data('id');
-            const formData = new FormData(document.querySelector("#editModal form"));
-
-            $.ajax({
-                url: `{{ route('@@@folderviewname@@@.update', ['id' => ':1']) }}`.replace(':1', id),
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: (res) => {
-                    $("#editModal").modal('hide');
-                    toastr.success(res.message);
-                    tbl.ajax.reload();
-                },
-                error: (xhr) => {
-                    if (xhr.status == 422) {
-                        const errors = xhr.responseJSON.errors;
-                        for (const [key, value] of Object.entries(errors)) {
-                            $(`#editModal [name="${key}"]`).addClass("is-invalid");
-                            $(`#editModal #${key}-error`).text(value);
-                        }
-                        return;
-                    } 
-                    $("#editModal").modal('hide');
-                    console.error(JSON.parse(xhr.responseText).error);
-                    toastr.error('Error occured!');
                 }
             });
         });
 
         $("#table tbody").on('click', '.deleteBtn', function() {
             const data = tbl.row($(this).parents("tr")).data();
-            const formData = new FormData(document.querySelector("#editModal form"));
 
             $("#deleteModal").modal('show');
 
-            $('#deleteModal #confirm-delete').click(function() {
+            $("#deleteModal form").on('submit', function() {
+                const formData = new FormData($("#deleteModal form"));
+
                 $.ajax({
                     url: `{{ route('@@@folderviewname@@@.destroy', ['id' => ':1']) }}`.replace(':1', data.@@@primarykey@@@),
                     type: "POST",
                     data: formData,
+                    processData: false,
+                    contentType: false,
                     success: (res) => {
-                        $("#deleteModal").modal('hide');
                         toastr.success(res.message);
                         tbl.ajax.reload();
                     },
                     error: (xhr) => {
-                        $("#deleteModal").modal('hide');
                         console.error(JSON.parse(xhr.responseText).error);
                         toastr.error('Error occured!');
+                    },
+                    complete: () => {
+                        $("#deleteModal").modal('hide');
                     }
                 });
             });

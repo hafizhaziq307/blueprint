@@ -44,9 +44,14 @@ class @@@modelname@@@Controller extends Controller
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            @@@validationrules@@@
-        ]);
+        $validatedData = $request->validate(
+            [
+                @@@validationrules@@@
+            ],
+            [
+                // custom message
+            ]
+        );
 
         try {
             @@@modelname@@@::create($validatedData);
@@ -59,9 +64,14 @@ class @@@modelname@@@Controller extends Controller
 
     public function update(Request $request, $id)
     {
-        $validatedData = $request->validate([
-            @@@validationrules@@@
-        ]);
+        $validatedData = $request->validate(
+            [
+                @@@validationrules@@@
+            ],
+            [
+                // custom message
+            ]
+        );
 
         try {
             @@@modelname@@@::findOrFail($id)->update($validatedData);

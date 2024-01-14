@@ -10,9 +10,7 @@ export function serialize(formTag) {
 }
 
 export function isEmpty(x) {
-    if (Array.isArray(x)) return !x.length; // array
-    if (typeof x === "object") return !Object.keys(x).length; // object
-    return !x; // string & number
+    return [Object, Array].includes((x || {}).constructor) && !Object.entries((x || {})).length;
 }
 
 export function fetchFileContents(path) {
@@ -31,17 +29,17 @@ export function fetchFileContents(path) {
 
 export function getNamingConventionsForLaravel(value, type) {
     switch (type) {
-        case "model":
+        case "model": // pascal case
             return toPascalCase(value);
 
-        case "view": // snake_case
+        case "view": // snake case
             return toSnakeCase(value);
 
-        case "controller":
+        case "controller": // pascal case
             let str = toPascalCase(value);
             return `${str}Controller`;
 
-        case "url": // kebab-case
+        case "url": // kebab case
             return toKebabCase(value);
 
         default:
