@@ -6,31 +6,26 @@
     import { imask } from '@imask/svelte';
 
     import { frontendTemplates, inputTypes } from "./data.js";
-    import CreateModal from './lib/modals/CreateModal.svelte';
+    import AddModal from './lib/modals/AddModal.svelte';
     import EditModal from './lib/modals/EditModal.svelte';
     import Card from './lib/Card.svelte';
     import { fields } from './stores.js';
     import { isEmpty, fetchFileContents, getNamingConventionsForLaravel, isSnakeCase, serialize, capitalize } from './helper.js';
 
-    const snakeCaseOptions = {
-        mask: /^[A-Za-z0-9_]*$/,
-    };
+    let showAddModal = false;
+    let showEditModal = false;
 
-    let backendChecked = null;
-    let frontendChecked = null;
     let title = null;
     let tableName = null;
     let primaryKey = "id";
 
-    let isCreateModalOpen = false;
-    let isEditModalOpen = false;
-    let editedRecord = {
+    let editObj = {
         id: null,
         label: null,
         fieldName: null,
         inputTypeId: null
     };
-    let createdRecord = {
+    let addObj = {
         id: null,
         label: null,
         fieldName: null,
@@ -38,49 +33,47 @@
     };
 
     function openCreateModal() {
-        isCreateModalOpen = true;
+        showAddModal = true;
     }
 
     function closeCreateModal() {
-        isCreateModalOpen = false;
+        showAddModal = false;
     }
 
     function openEditModal(id) {
         const record = $fields.find(x => x.id == id);
 
         if (record) {
-            editedRecord = {
+            editObj = {
                 id: record.id,
                 label: record.label,
                 fieldName: record.fieldName,
                 inputTypeId: record.inputTypeId
             };
-            isEditModalOpen = true;
+            showEditModal = true;
         }
     }
 
     function closeEditModal() {
-        editedRecord = {
+        editObj = {
             id: null,
             label: null,
             fieldName: null,
             inputTypeId: null
         };
 
-        isEditModalOpen = false;
+        showEditModal = false;
     }
 
     function saveData(e) {
         let obj = serialize(e.target);
         obj['id'] = Math.floor(Date.now() / 1000);
 
-        console.log(obj.id);
-
         $fields = [...$fields, obj];
 
         closeCreateModal();
 
-        createdRecord = {
+        addObj = {
             id: null,
             label: null,
             fieldName: null,
@@ -316,7 +309,7 @@
     <form on:submit|preventDefault={generateCode} class="min-h-screen w-full p-4 space-y-3 ">
 
         <div class="grid grid-cols-2 gap-3">
-            <Card headerTitle="Backend Framework (Choose one)">
+            <Card headerTitle="Backend Framework">
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
                     <label>
                         <input type="radio" value="" class="peer hidden" checked>
@@ -329,7 +322,7 @@
                 </div>
             </Card>
 
-            <Card headerTitle="Frontend Template (Choose one)">
+            <Card headerTitle="Frontend Template">
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
                     {#each frontendTemplates as frontendTemplate, i}
                         <label>
@@ -355,18 +348,18 @@
                 
                 <div>
                     <p class="block mb-1 text-sm font-medium text-gray-900">Table</p>
-                    <input type="text" name="tableName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="table" bind:value={tableName} use:imask={snakeCaseOptions} required>
+                    <input type="text" name="tableName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="table" bind:value={tableName} required>
                 </div>
     
                 <div>
                     <p class="block mb-1 text-sm font-medium text-gray-900">Primary Key</p>
-                    <input type="text" name="primaryKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="primary key" bind:value={primaryKey} use:imask={snakeCaseOptions} required>
+                    <input type="text" name="primaryKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="primary key" bind:value={primaryKey} required>
                 </div>
             </div>
         </Card>
     
         <div class="text-right">
-            <button type="button" class="w-16 py-1.5 rounded text-white bg-green-500 hover:bg-green-600 inline-flex items-center justify-center gap-1" on:click={openCreateModal}>
+            <button type="button" title="Add Field" class="w-16 py-1.5 rounded text-white bg-green-500 hover:bg-green-600 inline-flex items-center justify-center gap-1" on:click={openCreateModal}>
                 <i class="fas fa-plus text-xs"></i>
                 <div class="font-medium text-sm">Add</div>
             </button>
@@ -387,17 +380,17 @@
                             <td class="py-2 px-4 text-left whitespace-nowrap">
                                 {field.label}
                             </td>
-                            <td class="py-2 px-4 text-left" use:imask={snakeCaseOptions}>
+                            <td class="py-2 px-4 text-left">
                                 {field.fieldName}
                             </td>
                             <td class="py-2 px-4 text-center">
                                 { inputTypes.find((x) => x.id == field.inputTypeId)?.title ?? '-' }
                             </td>
                             <td class="py-2 px-4 text-center space-x-0.5">
-                                <button type="button" class="bg-yellow-500 hover:bg-yellow-600 rounded w-16 py-1.5 text-white" on:click={() => openEditModal(field.id)}>
+                                <button type="button" title="Edit Field" class="bg-yellow-500 hover:bg-yellow-600 rounded w-16 py-1.5 text-white" on:click={() => openEditModal(field.id)}>
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button on:click={() => deleteData(field.id)} type="button" class="bg-red-500 hover:bg-red-600 rounded w-16 py-1.5 text-white" >
+                                <button type="button" title="Delete Field" on:click={() => deleteData(field.id)} class="bg-red-500 hover:bg-red-600 rounded w-16 py-1.5 text-white" >
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
@@ -415,6 +408,8 @@
         <button type="submit" class="bg-blue-600 hover:bg-blue-500 rounded w-full px-4 py-2 text-white font-medium block">Generate</button>
     </form>
 
-    <CreateModal isOpen={isCreateModalOpen} closeModal={closeCreateModal} saveData={saveData} createdRecord={createdRecord} />
-    <EditModal isOpen={isEditModalOpen} closeModal={closeEditModal} updateData={updateData} editedRecord={editedRecord} />
+    <AddModal isOpen={showAddModal} saveData={saveData} addObj={addObj} />
+    <EditModal isOpen={showEditModal} updateData={updateData} editObj={editObj} />
+
+    <button type="button" on:click={() => showAddModal = true}>click me!</button>
 </main>
