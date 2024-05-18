@@ -5,7 +5,9 @@
     import Swal from 'sweetalert2';
     import { imask } from '@imask/svelte';
 
-    import { frontendTemplates, inputTypes } from "./data.js";
+    import { IconCircleCheck, IconPlus  } from '@tabler/icons-svelte';
+
+    import { inputTypes, templates } from "./data.js";
     import AddModal from './lib/modals/AddModal.svelte';
     import EditModal from './lib/modals/EditModal.svelte';
     import Card from './lib/Card.svelte';
@@ -306,110 +308,107 @@
 </script>
 
 <main>
-    <form on:submit|preventDefault={generateCode} class="min-h-screen w-full p-4 space-y-3 ">
+    <form on:submit|preventDefault={generateCode} class="min-h-screen w-full p-4 space-y-3">
 
-        <div class="grid grid-cols-2 gap-3">
-            <Card headerTitle="Backend Framework">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                    <label>
-                        <input type="radio" value="" class="peer hidden" checked>
-                        
-                        <div class="hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer text-sm border-gray-200 group peer-checked:border-blue-500">
-                            <h2 class="font-medium text-gray-700">Laravel 10</h2>
-                            <i class="fas fa-check-circle text-xl text-blue-600 invisible group-[.peer:checked+&]:visible"></i>
-                        </div>
+        <Card>
+            <header slot="card-header">Choose Templates</header>
+
+            <div slot="card-body" class="sm:grid sm:grid-cols-2 gap-2">
+
+                {#each templates as template, i}
+                    <label class="block cursor-pointer rounded-lg px-4 py-2 has-[:checked]:bg-blue-500 has-[:checked]:text-white relative border border-slate-400 peer-checked:border-transparent">
+
+                        <input type="radio" name="template" value="1" class="peer hidden" checked={i == 0 && 'checked'}/>
+
+                        <header class="font-bold text-lg">{template.title}</header>
+
+                        <ul class="list-inside list-disc">
+                            {#each template.stacks as stack}
+                                <li>{stack}</li>
+                            {/each}
+                        </ul>
+
+                        <IconCircleCheck stroke={2} class="hidden peer-checked:block absolute right-2 bottom-2 size-7 sm:size-8 lg:size-9" />
+
                     </label>
-                </div>
-            </Card>
-
-            <Card headerTitle="Frontend Template">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                    {#each frontendTemplates as frontendTemplate, i}
-                        <label>
-                            <input type="radio" value={frontendTemplate.id} class="peer hidden" name="frontendRadio" checked={i == 0 && 'checked'}>
-                            
-                            <div class="hover:bg-gray-50 flex items-center justify-between px-4 py-2 border-2 rounded-lg cursor-pointer text-sm border-gray-200 group peer-checked:border-blue-500">
-                                <h2 class="font-medium text-gray-700">{frontendTemplate.title}</h2>
-                                <i class="fas fa-check-circle text-xl text-blue-600 invisible group-[.peer:checked+&]:visible"></i>
-                            </div>
-                        </label>
-                    {/each}
-                </div>
-            </Card>
-        </div>
-        
+                {/each}
+                
+            </div>
+        </Card>    
     
-        <Card headerTitle="CRUD">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <Card>
+            <header slot="card-header">CRUD Information</header>
+
+            <div slot="card-body" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
-                    <p class="block mb-1 text-sm font-medium text-gray-900">CRUD Title</p>
-                    <input type="text" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="CRUD title" bind:value={title} required>
+                    <p class="mb-1 font-medium">Title</p>
+                    <input type="text" name="title" class="bg-slate-50 border border-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2.5 outline-none" placeholder="title" bind:value={title} required>
                 </div>
                 
                 <div>
-                    <p class="block mb-1 text-sm font-medium text-gray-900">Table</p>
-                    <input type="text" name="tableName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="table" bind:value={tableName} required>
+                    <p class="mb-1 font-medium">Table Name</p>
+                    <input type="text" name="tableName" class="bg-slate-50 border border-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2.5 outline-none" placeholder="table name" bind:value={tableName} required>
                 </div>
     
                 <div>
-                    <p class="block mb-1 text-sm font-medium text-gray-900">Primary Key</p>
-                    <input type="text" name="primaryKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 focus:outline-none" placeholder="primary key" bind:value={primaryKey} required>
+                    <p class="mb-1 font-medium">Primary Key</p>
+                    <input type="text" name="primaryKey" class="bg-slate-50 border border-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2.5 outline-none" placeholder="primary key" bind:value={primaryKey} required>
                 </div>
             </div>
         </Card>
     
         <div class="text-right">
-            <button type="button" title="Add Field" class="w-16 py-1.5 rounded text-white bg-green-500 hover:bg-green-600 inline-flex items-center justify-center gap-1" on:click={openCreateModal}>
-                <i class="fas fa-plus text-xs"></i>
-                <div class="font-medium text-sm">Add</div>
+            <button type="button" class="bg-green-500 hover:bg-green-600 rounded w-16 py-1 text-white font-medium" on:click={openCreateModal}>
+                Add
             </button>
         </div>
+        
 
-        <table class="min-w-max w-full table-auto text-sm bg-white shadow rounded-lg border">
+        <table class="min-w-max w-full table-auto bg-white">
             <thead>
-                <tr class="bg-gray-200 text-gray-600 leading-normal">
-                    <th class="py-2 px-4 text-left">Label</th>
-                    <th class="py-2 px-4 text-left">Field name</th>
-                    <th class="py-2 px-4 text-center">Input type</th>
-                    <th class="py-2 px-4 text-center">Actions</th>
+                <tr class="bg-slate-200">
+                    <th class="py-2 px-4 text-center border-y border-l border-slate-400 w-10">#</th>
+                    <th class="py-2 px-4 text-left border-y border-slate-400">Label</th>
+                    <th class="py-2 px-4 text-left border-y border-slate-400">Column name</th>
+                    <th class="py-2 px-4 text-center border-y border-slate-400">Input type</th>
+                    <th class="py-2 px-4 text-center border-y border-r border-slate-400">Actions</th>
                 </tr>
             </thead>
-            <tbody class="text-gray-600">
-                    {#each $fields as field}
-                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-2 px-4 text-left whitespace-nowrap">
-                                {field.label}
-                            </td>
-                            <td class="py-2 px-4 text-left">
-                                {field.fieldName}
-                            </td>
-                            <td class="py-2 px-4 text-center">
-                                { inputTypes.find((x) => x.id == field.inputTypeId)?.title ?? '-' }
-                            </td>
-                            <td class="py-2 px-4 text-center space-x-0.5">
-                                <button type="button" title="Edit Field" class="bg-yellow-500 hover:bg-yellow-600 rounded w-16 py-1.5 text-white" on:click={() => openEditModal(field.id)}>
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" title="Delete Field" on:click={() => deleteData(field.id)} class="bg-red-500 hover:bg-red-600 rounded w-16 py-1.5 text-white" >
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    {:else}
-                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td colspan="4" class="py-2 px-4 text-center">
-                                No Fields!
-                            </td>
-                        </tr>
-                    {/each}
+            <tbody>
+                {#each $fields as field, i}
+                    <tr class="hover:bg-slate-100">
+                        <td class="py-2 px-4 text-center border-y border-l border-slate-400">{i}</td>
+                        <td class="py-2 px-4 text-left whitespace-nowrap border-y border-slate-400">
+                            {field.label}
+                        </td>
+                        <td class="py-2 px-4 text-left border-y border-slate-400">
+                            {field.fieldName}
+                        </td>
+                        <td class="py-2 px-4 text-center border-y border-slate-400">
+                            { inputTypes.find((x) => x.id == field.inputTypeId)?.title ?? '-' }
+                        </td>
+                        <td class="py-2 px-4 text-center border-y border-r border-slate-400 space-x-0.5"> 
+                            <button type="button" class="bg-yellow-500 hover:bg-yellow-600 rounded w-16 py-1 text-white font-medium" on:click={() => openEditModal(field.id)}>
+                                Edit
+                            </button>
+                            <button type="button" class="bg-red-500 hover:bg-red-600 rounded w-16 py-1 text-white font-medium" on:click={() => deleteData(field.id)}>
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                {:else}
+                    <tr class="hover:bg-slate-100">
+                        <td colspan="5" class="py-2 px-4 text-center border border-slate-400">
+                            No Column!
+                        </td>
+                    </tr>
+                {/each}
             </tbody>
         </table>
 
-        <button type="submit" class="bg-blue-600 hover:bg-blue-500 rounded w-full px-4 py-2 text-white font-medium block">Generate</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-500 rounded w-full px-4 py-2 text-white font-medium">Generate</button>
     </form>
 
     <AddModal isOpen={showAddModal} saveData={saveData} addObj={addObj} />
     <EditModal isOpen={showEditModal} updateData={updateData} editObj={editObj} />
-
-    <button type="button" on:click={() => showAddModal = true}>click me!</button>
 </main>

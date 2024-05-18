@@ -1,12 +1,10 @@
-<script>
-    export let headerTitle; 
-</script>
-
-<div class="rounded-lg border shadow bg-white">
+<div class="rounded-lg border border-slate-400 shadow bg-white">
     
-    <header class="font-medium text-gray-700 mb-2 border-b px-3 py-2">{headerTitle}</header>
+    <header class="font-medium mb-2 border-b border-b-slate-400 px-3 py-2">
+        <slot name="card-header" />
+    </header>
 
     <div class="px-3 py-2">
-        <slot/>
+        <slot name="card-body" />
     </div>
 </div>
