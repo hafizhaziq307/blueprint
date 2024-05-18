@@ -12,7 +12,7 @@
     import EditModal from './lib/modals/EditModal.svelte';
     import Card from './lib/Card.svelte';
     import { fields } from './stores.js';
-    import { isEmpty, fetchFileContents, getNamingConventionsForLaravel, isSnakeCase, serialize, capitalize } from './helper.js';
+    import { isEmpty, fetchFileContents, getNamingConvention, isSnakeCase, serialize, capitalize } from './helper.js';
 
     let showAddModal = false;
     let showEditModal = false;
@@ -119,18 +119,28 @@
             return;
         }
 
-        const model = getNamingConventionsForLaravel(obj.tableName, "model");
-        const view = getNamingConventionsForLaravel(obj.tableName, "view");
-        const controller = getNamingConventionsForLaravel(obj.tableName, "controller");
-        const url = getNamingConventionsForLaravel(obj.tableName, "url");
-        const folderDownload = `${Math.floor(Date.now() / 1000)}-${obj.title}`;
+        const names = {
+            model: getNamingConvention(obj.tableName, "model"),
+            view: getNamingConvention(obj.tableName, "view"),
+            controller: getNamingConvention(obj.tableName, "controller"),
+            variable: getNamingConvention(obj.tableName, "variable"),
+            url: getNamingConvention(obj.tableName, "url"),
+            folderDownload: `${Math.floor(Date.now() / 1000)}-${obj.title}`,
+        };
 
-        await createDir(folderDownload, { dir: BaseDirectory.Download, recursive: true });
 
-        generateModel(folderDownload, obj.tableName, obj.primaryKey, model);
-        generateRoute(folderDownload, view, controller);
-        generateController(folderDownload, model, view, obj.fields, controller);
-        generateView(folderDownload, view, obj.primaryKey, obj.fields, url, obj.title);
+        // // TODO: done testing!
+        // await createDir(names.folderDownload, { dir: BaseDirectory.Download, recursive: true });
+        
+        // generateModel(names, obj);
+        // generateRoute(names, obj);
+        // generateController(names, obj);
+        generateIndexView(names, obj);
+        generateCreateView(names, obj);
+        generateEditView(names, obj);
+        // console.log(names);
+        // console.log(obj);
+        return;
 
         const output = `${await downloadDir()}${folderDownload}`.replace(/\\/g, '/');
 
@@ -147,135 +157,298 @@
         });
     }
 
-    async function generateController(folderDownload , modelname, folderView, fields, controller) {
-        let validationRules = getValidationRules(fields);
-        let contents = await fetchFileContents('laravel10/controller.php');
+    async function generateController(names, obj) {
+        let validationRules = getValidationRules(obj.fields);
+        let contents;
+
+        if (obj.template == 1) {
+            contents = await fetchFileContents('templates/basic-crud/controller.php');
+
+        } else if (obj.template == 2) {
+            contents = await fetchFileContents('templates/open-page-crud/controller.php');
+        }
 
         contents = contents
-            .replaceAll('@@@modelname@@@', modelname)
-            .replaceAll('@@@folderviewname@@@', folderView)
+            .replaceAll('@@@modelname@@@', names.model)
+            .replaceAll('@@@folderviewname@@@', names.view)
             .replaceAll('@@@validationrules@@@', validationRules);
 
-        await writeTextFile({ path: `${folderDownload}/${controller}.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${names.folderDownload}/${names.controller}.php`, contents: contents }, { dir: BaseDirectory.Download });
 
     }
 
-    async function generateModel(folderDownload, table, primarykey, model) {
-        let contents = await fetchFileContents('laravel10/model.php');
+    async function generateModel(names, obj) {
+        let contents;
+
+        if (obj.template == 1) {
+            contents = await fetchFileContents('templates/basic-crud/model.php');
+
+        } else if (obj.template == 2) {
+            contents = await fetchFileContents('templates/open-page-crud/model.php');
+        }
 
         contents = contents
-            .replaceAll('@@@tablename@@@', table)
-            .replaceAll('@@@modelname@@@', model)
-            .replaceAll('@@@primarykey@@@', primarykey);
+            .replaceAll('@@@tablename@@@', obj.tableName)
+            .replaceAll('@@@modelname@@@', names.model)
+            .replaceAll('@@@primarykey@@@', obj.primaryKey);
 
-        await writeTextFile({ path: `${folderDownload}/${model}.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${names.folderDownload}/${names.model}.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
-    async function generateRoute(folderDownload, folderView, controller) {
-        let contents = await fetchFileContents('laravel10/web.php');
+    async function generateRoute(names, obj) {
+        let contents;
+
+        if (obj.template == 1) {
+            contents = await fetchFileContents('templates/basic-crud/web.php');
+
+        } else if (obj.template == 2) {
+            contents = await fetchFileContents('templates/open-page-crud/web.php');
+        }
 
         contents = contents
-            .replaceAll('@@@controllername@@@', controller)
-            .replaceAll('@@@folderviewname@@@', folderView)
+            .replaceAll('@@@controllername@@@', names.controller)
+            .replaceAll('@@@folderviewname@@@', names.view)
 
-        await writeTextFile({ path: `${folderDownload}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${names.folderDownload}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
-    async function generateView(folderDownload, folderView, primaryKey, fields, url, title) {
-        let contents = await fetchFileContents('laravel10/view.blade.php');
+    async function generateIndexView(names, obj) { // FIXME:
+        let contents;
 
-        let thead = [];
-        for (const field of fields) {
-            const temp = `<th>${field.label}</th>`;
-            thead.push(temp);
+        if (obj.template == 1) {
+            const thead = obj.fields.map(field => `<th>${field.label}</th>`).join('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t');
+    
+            const tbody = obj.fields.map(field => {
+                return `{
+                    \tdata: "${field.fieldName}",
+                    \tclassName: "text-center",
+                \t},`;
+            }).join('\r\n\t\t\t\t');
+
+            contents = await fetchFileContents('basic-crud/index.blade.php');
+    
+            contents = contents
+                .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
+                .replaceAll('@@@thead@@@', thead)
+                .replaceAll('@@@tbody@@@', tbody)
+                .replaceAll('@@@primarykey@@@', primaryKey)
+                .replaceAll('@@@folderviewname@@@', view)
+
+        } else if (obj.template == 2) {
+            const thead = obj.fields.map(field => `<th>${field.label}</th>`).join('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t');
+    
+            const tbody = obj.fields.map(field => {
+                return `{
+                    \tdata: "${field.fieldName}",
+                    \tclassName: "text-center",
+                \t},`;
+            }).join('\r\n\t\t\t\t');
+    
+            const editInputs = obj.fields.map(field => {
+                return `$("#editModal [name='${field.fieldName}']").val(res.${field.fieldName});`;
+            }).join('\r\n\t\t\t\t\t');
+
+            const htmlInputs = obj.fields.map(field => {
+                if (field.inputTypeId === 1) { // text
+                    return `<div class="form-group">
+                                \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                                \t\t\t\t\t<input type="text" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
+                                \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                            \t\t\t\t\t</div>`;
+
+                } else if (field.inputTypeId === 2) { // number
+                    return `<div class="form-group">
+                                \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                                \t\t\t\t\t<input type="number" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
+                                \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                            \t\t\t\t\t</div>`;
+
+                } else if (field.inputTypeId == 3) { // date
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<input type="date" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
+                        \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                    \t\t\t\t\t</div>`;
+
+                } 
+                else if (field.inputTypeId == 4) { // textarea
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<textarea class="form-control" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
+                        \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                    \t\t\t\t\t</div>`;
+
+                } 
+                else if (field.inputTypeId == 5) { // select
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<select class="form-control" rows="3" name="${field.fieldName}">
+                            \t\t\t\t\t<option value=""></option>
+                        \t\t\t\t\t</select>
+                        \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
+                    \t\t\t\t\t</div>`;
+                    
+                } 
+            }).join('\r\n\t\t\t\t\t\t\t\t\t');
+
+            contents = await fetchFileContents('open-page-crud/view.blade.php');
+    
+            contents = contents
+                .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
+                .replaceAll('@@@thead@@@', thead)
+                .replaceAll('@@@tbody@@@', tbody)
+                .replaceAll('@@@primarykey@@@', primaryKey)
+                .replaceAll('@@@folderviewname@@@', view)
+                .replaceAll('@@@editInputs@@@', editInputs)
+                .replaceAll('@@@htmlInputs@@@', htmlInputs);
         }
-        thead = `${thead.join('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t')}`;
 
-        let tbody = [];
-        for (const field of fields) {
-            const temp = `{
-                \tdata: "${field.fieldName}",
-                \tclassName: "text-center",
-            \t},`;
-            tbody.push(temp);
-        }
-        tbody = `${tbody.join('\r\n\t\t\t\t')}`;
+        return;
 
-        let editInputs = [];
-        for (const field of fields) {
-            const temp = `$("#editModal [name='${field.fieldName}']").val(res.${field.fieldName});`;
-            editInputs.push(temp);
-        }
-        editInputs = `${editInputs.join('\r\n\t\t\t\t\t')}`;
-
-
-        let htmlInputs = getHtmlInputs(fields);
-
-        contents = contents
-            .replaceAll('@@@crudtitle@@@', capitalize(title))
-            .replaceAll('@@@thead@@@', thead)
-            .replaceAll('@@@tbody@@@', tbody)
-            .replaceAll('@@@primarykey@@@', primaryKey)
-            .replaceAll('@@@folderviewname@@@', folderView)
-            .replaceAll('@@@editInputs@@@', editInputs)
-            .replaceAll('@@@htmlInputs@@@', htmlInputs);
-
-
-        await createDir(`${folderDownload}/${url}`, { dir: BaseDirectory.Download, recursive: true });
-
-        await writeTextFile({ path: `${folderDownload}/${url}/index.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await createDir(`${names.folderDownload}/${names.url}`, { dir: BaseDirectory.Download, recursive: true });
+        await writeTextFile({ path: `${names.folderDownload}/${names.url}/index.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }   
 
-    function getHtmlInputs(fields) {
-        let data = [];
- 
-        for (const field of fields) {
-            if (field.inputTypeId == 1) { // text
-                const temp = `<div class="form-group">
-                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                    \t\t\t\t\t<input type="text" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
-                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
-                \t\t\t\t\t</div>`;
-                data.push(temp);
-            } 
-            else if (field.inputTypeId == 2) { // number
-                const temp = `<div class="form-group">
-                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                    \t\t\t\t\t<input type="number" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
-                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
-                \t\t\t\t\t</div>`;
-                data.push(temp);
-            } 
-            else if (field.inputTypeId == 3) { // date
-                const temp = `<div class="form-group">
-                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                    \t\t\t\t\t<input type="date" class="form-control" placeholder="${field.label}" name="${field.fieldName}">
-                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
-                \t\t\t\t\t</div>`;
-                data.push(temp);
-            } 
-            else if (field.inputTypeId == 4) { // textarea
-                const temp = `<div class="form-group">
-                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                    \t\t\t\t\t<textarea class="form-control" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
-                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
-                \t\t\t\t\t</div>`;
-                data.push(temp);
-            } 
-            else if (field.inputTypeId == 5) { // select
-                const temp = `<div class="form-group">
-                    \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                    \t\t\t\t\t<select class="form-control" rows="3" name="${field.fieldName}">
-                        \t\t\t\t\t<option value=""></option>
-                    \t\t\t\t\t</select>
-                    \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
-                \t\t\t\t\t</div>`;
-                data.push(temp);
-            } 
+    async function generateCreateView(names, obj) {
+        let contents;
+
+        if (obj.template == 1) {
+            const htmlInputs = obj.fields.map(field => {
+                if (field.inputTypeId == 1) { // text
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
+                        \t\t\t\t\t@error('${field.fieldName}')
+                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
+                        \t\t\t\t\t@enderror
+                    \t\t\t\t\t</div>`;
+
+                } 
+                else if (field.inputTypeId == 2) { // number
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
+                        \t\t\t\t\t@error('${field.fieldName}')
+                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
+                        \t\t\t\t\t@enderror
+                    \t\t\t\t\t</div>`;
+
+                } 
+                else if (field.inputTypeId == 3) { // date
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
+                        \t\t\t\t\t@error('${field.fieldName}')
+                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
+                        \t\t\t\t\t@enderror
+                    \t\t\t\t\t</div>`;
+
+                } 
+                else if (field.inputTypeId == 4) { // textarea
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
+                        \t\t\t\t\t@error('${field.fieldName}')
+                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
+                        \t\t\t\t\t@enderror
+                    \t\t\t\t\t</div>`;
+
+                } 
+                else if (field.inputTypeId == 5) { // select
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
+                            \t\t\t\t\t<option value=""></option>
+                        \t\t\t\t\t</select>
+                        \t\t\t\t\t<div class="invalid-feedback"></div>
+                    \t\t\t\t\t</div>`;
+
+                } 
+            }).join('\r\n\t\t\t\t\t\t\t\t\t');
+
+            contents = await fetchFileContents('basic-crud/create.blade.php');
+        
+            contents = contents
+                .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
+                .replaceAll('@@@folderviewname@@@', names.view)
+                .replaceAll('@@@htmlInputs@@@', htmlInputs);
+            
+        } else if (obj.template == 2) {
+            // none
         }
         
-        data = `${data.join('\r\n\t\t\t\t\t\t\t\t\t')}`;
-        return data;
+        await writeTextFile({ path: `${names.folderDownload}/views/create.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+    }
+
+    async function generateEditView(names, obj) {
+        let contents;
+
+        if (obj.template == 1) {
+            const htmlInputs = obj.fields.map(field => {
+                if (field.inputTypeId == 1) { // text
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        \t\t\t\t\t@error('${field.fieldName}')
+                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
+                        \t\t\t\t\t@enderror
+                    \t\t\t\t\t</div>`;
+                    
+                } 
+                else if (field.inputTypeId == 2) { // number
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        \t\t\t\t\t@error('${field.fieldName}')
+                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
+                        \t\t\t\t\t@enderror
+                    \t\t\t\t\t</div>`;
+                    
+                } 
+                else if (field.inputTypeId == 3) { // date
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        \t\t\t\t\t@error('${field.fieldName}')
+                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
+                        \t\t\t\t\t@enderror
+                    \t\t\t\t\t</div>`;
+                    
+                } 
+                else if (field.inputTypeId == 4) { // textarea
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}">{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}</textarea>
+                        \t\t\t\t\t@error('${field.fieldName}')
+                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
+                        \t\t\t\t\t@enderror
+                    \t\t\t\t\t</div>`;
+                    
+                } 
+                else if (field.inputTypeId == 5) { // select FIXME:
+                    return `<div class="form-group">
+                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
+                        \t\t\t\t\t<select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
+                            \t\t\t\t\t<option value=""></option>
+                        \t\t\t\t\t</select>
+                        \t\t\t\t\t<div class="invalid-feedback"></div>
+                    \t\t\t\t\t</div>`;
+                    
+                } 
+            }).join('\r\n\t\t\t\t\t\t\t\t\t');
+            
+            contents = await fetchFileContents('basic-crud/create.blade.php');
+        
+            contents = contents
+                .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
+                .replaceAll('@@@folderviewname@@@', names.view)
+                .replaceAll('@@@htmlInputs@@@', htmlInputs);
+
+        } else if (obj.template == 2) {
+            // none
+        }
+        
+        await writeTextFile({ path: `${names.folderDownload}/views/create.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     function getValidationRules(fields) {
@@ -300,6 +473,10 @@
                 const temp = `'${field.fieldName}' => 'required|string',`;
                 data.push(temp);
             } 
+            else if (field.inputTypeId == 5) {
+                const temp = `'${field.fieldName}' => 'required|string',`;
+                data.push(temp);
+            } 
         }
 
         data = `${data.join('\r\n\t\t\t')}`;
@@ -318,7 +495,7 @@
                 {#each templates as template, i}
                     <label class="block cursor-pointer rounded-lg px-4 py-2 has-[:checked]:bg-blue-500 has-[:checked]:text-white relative border border-slate-400 peer-checked:border-transparent">
 
-                        <input type="radio" name="template" value="1" class="peer hidden" checked={i == 0 && 'checked'}/>
+                        <input type="radio" name="template" value="{template.id}" class="peer hidden" checked={i == 0 && 'checked'}/>
 
                         <header class="font-bold text-lg">{template.title}</header>
 
