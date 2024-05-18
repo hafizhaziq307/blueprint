@@ -3,40 +3,41 @@
     import { inputTypes } from "../../data.js";
 
     export let isOpen;
-    export let updateData;
-    export let editObj;
+    export let update;
+    export let obj;
+    export let closeModal;
 </script>
 
-<Modal bind:isOpen>
+<Modal bind:isOpen bind:closeModal>
     <!-- modal header -->
     <div slot="modal-title">Edit Field</div>
     
     <!-- modal content -->
-    <form slot="modal-body" class="row" on:submit|preventDefault={updateData}>
+    <form slot="modal-body" class="row" on:submit|preventDefault={update}>
         <div class="space-y-4">
             <div>
-                <label for="label" class="block text-sm font-bold ml-1 mb-1">Label</label>
-                <input type="text" name="label" id="label" value={editObj.label} autocomplete="off" required on:blur={(e) => e.target.value = (e.target.value).trim()} class="py-2 px-3 block w-full border-2 border-gray-200 rounded-md outline-none text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm" >
+                <p class="mb-1 font-medium">Label</p>
+                <input type="text" name="label" placeholder="label" value={obj.label} autocomplete="off" required on:blur={(e) => e.target.value = (e.target.value).trim()} class="bg-slate-50 border border-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2.5 outline-none" >
             </div>
     
             <div>
-                <label for="field-name" class="block text-sm font-bold ml-1 mb-1">Field name</label>
-                <input type="text" name="fieldName" id="field-name" value={editObj.fieldName} autocomplete="off" required on:blur={(e) => e.target.value = (e.target.value).trim()} class="py-2 px-3 block w-full border-2 border-gray-200 rounded-md outline-none text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                <p class="mb-1 font-medium">Column name</p>
+                <input type="text" name="fieldName" placeholder="column name" value={obj.fieldName} autocomplete="off" required on:blur={(e) => e.target.value = (e.target.value).trim()} class="bg-slate-50 border border-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2.5 outline-none">
             </div>
     
             <div>
-                <label for="input-type" class="block text-sm font-bold ml-1 mb-1">Input type</label>
-                <select name="inputTypeId" id="input-type" class="py-2 px-3 block w-full border-2 border-gray-200 rounded-md outline-none text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                <p class="mb-1 font-medium">Input type</p>
+                <select name="inputTypeId" class="bg-slate-50 border border-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2.5 outline-none">
                     {#each inputTypes as inputType}
-                        <option value={inputType.id} selected={(inputType.id == editObj.inputTypeId) ? 'selected' : ''}>{inputType.title}</option>
+                        <option value={inputType.id} selected={(inputType.id == obj.inputTypeId) ? 'selected' : ''}>{inputType.title}</option>
                     {/each}
                 </select>
             </div>
         </div>
     
-        <div class="text-right">
-            <input type="hidden" name="id" value="{editObj.id}">
-            <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 leading-snug px-4 py-2 rounded-md text-md text-white font-semibold mt-4 text-sm">Save</button>
+        <div class="text-right mt-4">
+            <input type="hidden" name="id" value="{obj.id}">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 rounded w-16 py-1 text-white font-medium">Update</button>
         </div>
     </form>
 </Modal>

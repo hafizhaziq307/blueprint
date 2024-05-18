@@ -1,18 +1,11 @@
-export const frontendTemplates = [
-    {
-        id: 1,
-        title: 'AdminLTE 3'
-    },
-];
-
 export const inputTypes = [
     {
         id: 1,
-        title: 'Text input'
+        title: 'Text'
     },
     {
         id: 2,
-        title: 'Number input'
+        title: 'Number'
     },
     {
         id: 3,

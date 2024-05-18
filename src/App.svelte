@@ -409,6 +409,6 @@
         <button type="submit" class="bg-blue-600 hover:bg-blue-500 rounded w-full px-4 py-2 text-white font-medium">Generate</button>
     </form>
 
-    <AddModal isOpen={showAddModal} saveData={saveData} addObj={addObj} />
-    <EditModal isOpen={showEditModal} updateData={updateData} editObj={editObj} />
+    <AddModal isOpen={showAddModal} closeModal={closeCreateModal} save={saveData} obj={addObj} />
+    <EditModal isOpen={showEditModal} closeModal={closeEditModal} update={updateData} obj={editObj} />
 </main>
