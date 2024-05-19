@@ -128,33 +128,42 @@
             folderDownload: `${Math.floor(Date.now() / 1000)}-${obj.title}`,
         };
 
+        console.log(names);
 
-        // // TODO: done testing!
-        // await createDir(names.folderDownload, { dir: BaseDirectory.Download, recursive: true });
-        
+        // TODO: done testing!
+        await createDir(names.folderDownload, { dir: BaseDirectory.Download, recursive: true });
+
         // generateModel(names, obj);
         // generateRoute(names, obj);
         // generateController(names, obj);
-        generateIndexView(names, obj);
+
+        // await createDir(`${names.folderDownload}/View/Components/${names.model}/Modals`, { dir: BaseDirectory.Download, recursive: true }); // example: 17230497-Label/View/Components/Post
+        // generateDeleteConfirmModalBackend(names, obj);
+        
+        // await createDir(`${names.folderDownload}/views/components/${names.url}/modals`, { dir: BaseDirectory.Download, recursive: true }); // example: 17230497-Label/views/components/post
+        // generateDeleteConfirmModalFrontend(names, obj);
+
+        // await createDir(`${names.folderDownload}/views/layouts`, { dir: BaseDirectory.Download, recursive: true }); // example: 17230497-Label/views/layouts
+        // generateAppLayout(names, obj);
+
+        await createDir(`${names.folderDownload}/views/${names.url}`, { dir: BaseDirectory.Download, recursive: true }); // example: 17230497-Label/views/post
+        // generateIndexView(names, obj);
         generateCreateView(names, obj);
         generateEditView(names, obj);
-        // console.log(names);
-        // console.log(obj);
-        return;
 
-        const output = `${await downloadDir()}${folderDownload}`.replace(/\\/g, '/');
+        // const output = `${await downloadDir()}${names.folderDownload}`.replace(/\\/g, '/');
 
-        Swal.fire({
-            title: 'Success',
-            text: 'Source code generated successfully!',
-            icon: 'success',
-            confirmButtonText: 'Go To Directory',
-            showCloseButton: true,
-            preConfirm: async() => {
-                await invoke('show_in_folder', {path: output});
-                return false; // Prevent confirmed
-            },
-        });
+        // Swal.fire({
+        //     title: 'Success',
+        //     text: 'Source code generated successfully!',
+        //     icon: 'success',
+        //     confirmButtonText: 'Go To Directory',
+        //     showCloseButton: true,
+        //     preConfirm: async() => {
+        //         await invoke('show_in_folder', {path: output});
+        //         return false; // Prevent confirmed
+        //     },
+        // });
     }
 
     async function generateController(names, obj) {
@@ -212,6 +221,48 @@
         await writeTextFile({ path: `${names.folderDownload}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
+    async function generateAppLayout(names, obj) {
+        let contents;
+
+        if (obj.template == 1) {
+            contents = await fetchFileContents('templates/basic-crud/app.blade.php');
+
+        } else if (obj.template == 2) {
+            return; // TODO: add later
+
+        }
+
+        await writeTextFile({ path: `${names.folderDownload}/views/layouts/app.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+    }
+
+    async function generateDeleteConfirmModalBackend(names, obj) {
+        let contents;
+
+        if (obj.template == 1) {
+            contents = await fetchFileContents('templates/basic-crud/ConfirmDelete.php');
+
+        } else if (obj.template == 2) {
+            return; // TODO: add later
+
+        }
+
+        await writeTextFile({ path: `${names.folderDownload}/View/Components/${names.model}/Modals/ConfirmDelete.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+    }
+
+    async function generateDeleteConfirmModalFrontend(names, obj) {
+        let contents;
+
+        if (obj.template == 1) {
+            contents = await fetchFileContents('templates/basic-crud/confirm-delete.blade.php');
+
+        } else if (obj.template == 2) {
+            return; // TODO: add later
+
+        }
+
+        await writeTextFile({ path: `${names.folderDownload}/views/components/${names.url}/modals/confirm-delete.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+    }
+
     async function generateIndexView(names, obj) { // FIXME:
         let contents;
 
@@ -219,22 +270,23 @@
             const thead = obj.fields.map(field => `<th>${field.label}</th>`).join('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t');
     
             const tbody = obj.fields.map(field => {
-                return `{
-                    \tdata: "${field.fieldName}",
-                    \tclassName: "text-center",
-                \t},`;
+                return 
+                `{
+                    data: "${field.fieldName}",
+                    className: "text-center",
+                },`;
             }).join('\r\n\t\t\t\t');
 
-            contents = await fetchFileContents('basic-crud/index.blade.php');
+            contents = await fetchFileContents('templates/basic-crud/index.blade.php');
     
             contents = contents
                 .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
                 .replaceAll('@@@thead@@@', thead)
                 .replaceAll('@@@tbody@@@', tbody)
-                .replaceAll('@@@primarykey@@@', primaryKey)
-                .replaceAll('@@@folderviewname@@@', view)
+                .replaceAll('@@@primarykey@@@', obj.primaryKey)
+                .replaceAll('@@@folderviewname@@@', names.view)
 
-        } else if (obj.template == 2) {
+        } else if (obj.template == 2) { // TODO: tak test lagi
             const thead = obj.fields.map(field => `<th>${field.label}</th>`).join('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t');
     
             const tbody = obj.fields.map(field => {
@@ -291,82 +343,81 @@
                 } 
             }).join('\r\n\t\t\t\t\t\t\t\t\t');
 
-            contents = await fetchFileContents('open-page-crud/view.blade.php');
+            contents = await fetchFileContents('templates/open-page-crud/view.blade.php');
     
             contents = contents
                 .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
                 .replaceAll('@@@thead@@@', thead)
                 .replaceAll('@@@tbody@@@', tbody)
-                .replaceAll('@@@primarykey@@@', primaryKey)
-                .replaceAll('@@@folderviewname@@@', view)
+                .replaceAll('@@@primarykey@@@', obj.primaryKey)
+                .replaceAll('@@@folderviewname@@@', names.view)
                 .replaceAll('@@@editInputs@@@', editInputs)
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
         }
 
-        return;
-
-        await createDir(`${names.folderDownload}/${names.url}`, { dir: BaseDirectory.Download, recursive: true });
-        await writeTextFile({ path: `${names.folderDownload}/${names.url}/index.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${names.folderDownload}/views/${names.url}/index.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }   
 
     async function generateCreateView(names, obj) {
-        let contents;
-
         if (obj.template == 1) {
             const htmlInputs = obj.fields.map(field => {
                 if (field.inputTypeId == 1) { // text
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
-                        \t\t\t\t\t@error('${field.fieldName}')
-                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
-                        \t\t\t\t\t@enderror
-                    \t\t\t\t\t</div>`;
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>`;
 
-                } 
-                else if (field.inputTypeId == 2) { // number
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
-                        \t\t\t\t\t@error('${field.fieldName}')
-                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
-                        \t\t\t\t\t@enderror
-                    \t\t\t\t\t</div>`;
+                } else if (field.inputTypeId == 2) { // number
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>`;
 
-                } 
-                else if (field.inputTypeId == 3) { // date
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
-                        \t\t\t\t\t@error('${field.fieldName}')
-                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
-                        \t\t\t\t\t@enderror
-                    \t\t\t\t\t</div>`;
+                } else if (field.inputTypeId == 3) { // date
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>`;
 
-                } 
-                else if (field.inputTypeId == 4) { // textarea
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
-                        \t\t\t\t\t@error('${field.fieldName}')
-                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
-                        \t\t\t\t\t@enderror
-                    \t\t\t\t\t</div>`;
+                } else if (field.inputTypeId == 4) { // textarea
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>`;
 
-                } 
-                else if (field.inputTypeId == 5) { // select
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
-                            \t\t\t\t\t<option value=""></option>
-                        \t\t\t\t\t</select>
-                        \t\t\t\t\t<div class="invalid-feedback"></div>
-                    \t\t\t\t\t</div>`;
+                } else if (field.inputTypeId == 5) { // select
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
+                            <option value=""></option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>`;
 
                 } 
             }).join('\r\n\t\t\t\t\t\t\t\t\t');
 
-            contents = await fetchFileContents('basic-crud/create.blade.php');
+            console.log(obj.fields);
+            console.log(htmlInputs);
+
+            let contents = await fetchFileContents('templates/basic-crud/create.blade.php');
         
             contents = contents
                 .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
@@ -374,10 +425,10 @@
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
             
         } else if (obj.template == 2) {
-            // none
+            return;
         }
         
-        await writeTextFile({ path: `${names.folderDownload}/views/create.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${names.folderDownload}/views/${names.url}/create.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     async function generateEditView(names, obj) {
@@ -386,69 +437,72 @@
         if (obj.template == 1) {
             const htmlInputs = obj.fields.map(field => {
                 if (field.inputTypeId == 1) { // text
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
-                        \t\t\t\t\t@error('${field.fieldName}')
-                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
-                        \t\t\t\t\t@enderror
-                    \t\t\t\t\t</div>`;
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>`;
                     
-                } 
-                else if (field.inputTypeId == 2) { // number
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
-                        \t\t\t\t\t@error('${field.fieldName}')
-                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
-                        \t\t\t\t\t@enderror
-                    \t\t\t\t\t</div>`;
+                } else if (field.inputTypeId == 2) { // number
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>`;
                     
-                } 
-                else if (field.inputTypeId == 3) { // date
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
-                        \t\t\t\t\t@error('${field.fieldName}')
-                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
-                        \t\t\t\t\t@enderror
-                    \t\t\t\t\t</div>`;
+                } else if (field.inputTypeId == 3) { // date
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>`;
                     
-                } 
-                else if (field.inputTypeId == 4) { // textarea
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}">{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}</textarea>
-                        \t\t\t\t\t@error('${field.fieldName}')
-                        \t\t\t\t\t<div class="invalid-feedback">{{ $message }}</div>
-                        \t\t\t\t\t@enderror
-                    \t\t\t\t\t</div>`;
+                } else if (field.inputTypeId == 4) { // textarea
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}">{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}</textarea>
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>`;
                     
-                } 
-                else if (field.inputTypeId == 5) { // select FIXME:
-                    return `<div class="form-group">
-                        \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
-                            \t\t\t\t\t<option value=""></option>
-                        \t\t\t\t\t</select>
-                        \t\t\t\t\t<div class="invalid-feedback"></div>
-                    \t\t\t\t\t</div>`;
+                } else if (field.inputTypeId == 5) { // select FIXME:
+                    return 
+                    `<div class="form-group">
+                        <label class="mb-1">${field.label}</label>
+                        <select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
+                            <option value=""></option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>`;
                     
                 } 
             }).join('\r\n\t\t\t\t\t\t\t\t\t');
             
-            contents = await fetchFileContents('basic-crud/create.blade.php');
+            contents = await fetchFileContents('templates/basic-crud/edit.blade.php');
         
             contents = contents
                 .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
                 .replaceAll('@@@folderviewname@@@', names.view)
+                .replaceAll('@@@variable@@@', names.variable)
+                .replaceAll('@@@primarykey@@@', obj.primaryKey)
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
 
         } else if (obj.template == 2) {
-            // none
+            return;
         }
         
-        await writeTextFile({ path: `${names.folderDownload}/views/create.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${names.folderDownload}/views/${names.url}/edit.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     function getValidationRules(fields) {

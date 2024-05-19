@@ -7,13 +7,13 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Post</h1>
+                <h1>@@@crudtitle@@@</h1>
             </div>
             
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item active">Post</li>
+                    <li class="breadcrumb-item active">@@@crudtitle@@@</li>
                 </ol>
             </div>
         </div>
@@ -23,7 +23,7 @@
 <section class="content">
     <div class="row">
         <div class="col-12">
-            <form action="{{ route('posts.update', ['id' => $record->id]) }}" method="post" class="card">
+            <form action="{{ route('@@@folderviewname@@@.update', ['id' => $@@@variable@@@->@@@primarykey@@@]) }}" method="post" class="card">
                 @csrf
                 @method('PATCH')
                 <header class="card-header">
@@ -36,14 +36,7 @@
                 </header>
 
                 <div class="card-body">
-                    <div class="form-group">
-                        <label for="inputName">Title</label>
-                        <input type="text" id="inputName" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title') ?: $record->title }}">
-                    </div>
-                    <div class="form-group">
-                        <label for="inputDescription">Description</label>
-                        <textarea id="inputDescription" name="description" class="form-control @error('description') is-invalid @enderror" rows="4">{{ old('description') ?: $record->description }}</textarea>
-                    </div>
+                    @@@htmlInputs@@@
                 </div>
                 
                 <footer class="card-footer text-right">

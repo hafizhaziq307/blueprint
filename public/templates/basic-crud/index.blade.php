@@ -70,14 +70,41 @@
 @endsection
 
 @section('js')
-<script src="{{ asset('js/datatables_config.js') }}"></script>
-
 <script>
     $('#table').DataTable({
         processing: true,
         serverSide: true,
-        layout: datatables_layout,
-        language: datatables_language,
+        layout: {
+            topStart: {
+                pageLength: {
+                    text: ' _MENU_ Rekod',
+                    menu: [10, 25, 50, 100]
+                }
+            },
+            topEnd: {
+                search: {
+                    text: 'Carian: _INPUT_',
+                }
+            },
+            bottomStart: {
+                info: {
+                    text: 'Rekod _START_ hingga _END_ / _TOTAL_ Rekod'
+                }
+            },
+            bottomEnd: {
+                paging: {
+                    type: 'simple_numbers',
+                }
+            },
+        },
+        language: {
+            paginate: {
+                next: '<i class="fa fa-chevron-right"></i>',
+                previous: '<i class="fa fa-chevron-left"></i>'
+            },
+            emptyTable: "Tiada rekod",
+            zeroRecords: "Tiada rekod dijumpai",
+        },
         ajax: {
             url: "{{ route('posts.getAll') }}",
             type: "POST",
