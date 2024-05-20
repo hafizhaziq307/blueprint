@@ -119,7 +119,7 @@
             return;
         }
 
-        const names = {
+        const namingConvention = {
             model: getNamingConvention(obj.tableName, "model"),
             view: getNamingConvention(obj.tableName, "view"),
             controller: getNamingConvention(obj.tableName, "controller"),
@@ -128,45 +128,40 @@
             folderDownload: `${Math.floor(Date.now() / 1000)}-${obj.title}`,
         };
 
-        console.log(names);
+        // console.log(obj);
+        // console.log(namingConvention);
+        // return;
 
-        // TODO: done testing!
-        await createDir(names.folderDownload, { dir: BaseDirectory.Download, recursive: true });
+        await createDir(namingConvention.folderDownload, { dir: BaseDirectory.Download, recursive: true });
 
-        // generateModel(names, obj);
-        // generateRoute(names, obj);
-        // generateController(names, obj);
+        generateModel(namingConvention, obj);
+        generateRoute(namingConvention, obj);
+        generateController(namingConvention, obj);
 
-        // await createDir(`${names.folderDownload}/View/Components/${names.model}/Modals`, { dir: BaseDirectory.Download, recursive: true }); // example: 17230497-Label/View/Components/Post
-        // generateDeleteConfirmModalBackend(names, obj);
-        
-        // await createDir(`${names.folderDownload}/views/components/${names.url}/modals`, { dir: BaseDirectory.Download, recursive: true }); // example: 17230497-Label/views/components/post
-        // generateDeleteConfirmModalFrontend(names, obj);
+        await createDir(`${namingConvention.folderDownload}/views/layouts`, { dir: BaseDirectory.Download, recursive: true });
+        generateAppLayout(namingConvention, obj);
 
-        // await createDir(`${names.folderDownload}/views/layouts`, { dir: BaseDirectory.Download, recursive: true }); // example: 17230497-Label/views/layouts
-        // generateAppLayout(names, obj);
+        await createDir(`${namingConvention.folderDownload}/views/${namingConvention.view}`, { dir: BaseDirectory.Download, recursive: true });
+        generateIndexView(namingConvention, obj);
+        generateCreateView(namingConvention, obj);
+        generateEditView(namingConvention, obj);
 
-        await createDir(`${names.folderDownload}/views/${names.url}`, { dir: BaseDirectory.Download, recursive: true }); // example: 17230497-Label/views/post
-        // generateIndexView(names, obj);
-        generateCreateView(names, obj);
-        generateEditView(names, obj);
+        const output = `${await downloadDir()}${namingConvention.folderDownload}`.replace(/\\/g, '/');
 
-        // const output = `${await downloadDir()}${names.folderDownload}`.replace(/\\/g, '/');
-
-        // Swal.fire({
-        //     title: 'Success',
-        //     text: 'Source code generated successfully!',
-        //     icon: 'success',
-        //     confirmButtonText: 'Go To Directory',
-        //     showCloseButton: true,
-        //     preConfirm: async() => {
-        //         await invoke('show_in_folder', {path: output});
-        //         return false; // Prevent confirmed
-        //     },
-        // });
+        Swal.fire({
+            title: 'Success',
+            text: 'Source code generated successfully!',
+            icon: 'success',
+            confirmButtonText: 'Go To Directory',
+            showCloseButton: true,
+            preConfirm: async() => {
+                await invoke('show_in_folder', {path: output});
+                return false; // Prevent confirmed
+            },
+        });
     }
 
-    async function generateController(names, obj) {
+    async function generateController(namingConvention, obj) {
         let validationRules = getValidationRules(obj.fields);
         let contents;
 
@@ -178,15 +173,17 @@
         }
 
         contents = contents
-            .replaceAll('@@@modelname@@@', names.model)
-            .replaceAll('@@@folderviewname@@@', names.view)
+            .replaceAll('@@@modelname@@@', namingConvention.model)
+            .replaceAll('@@@controller@@@', namingConvention.controller)
+            .replaceAll('@@@variable@@@', namingConvention.variable)
+            .replaceAll('@@@folderviewname@@@', namingConvention.view)
             .replaceAll('@@@validationrules@@@', validationRules);
 
-        await writeTextFile({ path: `${names.folderDownload}/${names.controller}.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${namingConvention.folderDownload}/${namingConvention.controller}.php`, contents: contents }, { dir: BaseDirectory.Download });
 
     }
 
-    async function generateModel(names, obj) {
+    async function generateModel(namingConvention, obj) {
         let contents;
 
         if (obj.template == 1) {
@@ -198,13 +195,13 @@
 
         contents = contents
             .replaceAll('@@@tablename@@@', obj.tableName)
-            .replaceAll('@@@modelname@@@', names.model)
+            .replaceAll('@@@modelname@@@', namingConvention.model)
             .replaceAll('@@@primarykey@@@', obj.primaryKey);
 
-        await writeTextFile({ path: `${names.folderDownload}/${names.model}.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${namingConvention.folderDownload}/${namingConvention.model}.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
-    async function generateRoute(names, obj) {
+    async function generateRoute(namingConvention, obj) {
         let contents;
 
         if (obj.template == 1) {
@@ -215,13 +212,13 @@
         }
 
         contents = contents
-            .replaceAll('@@@controllername@@@', names.controller)
-            .replaceAll('@@@folderviewname@@@', names.view)
+            .replaceAll('@@@controllername@@@', namingConvention.controller)
+            .replaceAll('@@@folderviewname@@@', namingConvention.view)
 
-        await writeTextFile({ path: `${names.folderDownload}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${namingConvention.folderDownload}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
-    async function generateAppLayout(names, obj) {
+    async function generateAppLayout(namingConvention, obj) {
         let contents;
 
         if (obj.template == 1) {
@@ -232,38 +229,10 @@
 
         }
 
-        await writeTextFile({ path: `${names.folderDownload}/views/layouts/app.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${namingConvention.folderDownload}/views/layouts/app.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
-    async function generateDeleteConfirmModalBackend(names, obj) {
-        let contents;
-
-        if (obj.template == 1) {
-            contents = await fetchFileContents('templates/basic-crud/ConfirmDelete.php');
-
-        } else if (obj.template == 2) {
-            return; // TODO: add later
-
-        }
-
-        await writeTextFile({ path: `${names.folderDownload}/View/Components/${names.model}/Modals/ConfirmDelete.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
-    }
-
-    async function generateDeleteConfirmModalFrontend(names, obj) {
-        let contents;
-
-        if (obj.template == 1) {
-            contents = await fetchFileContents('templates/basic-crud/confirm-delete.blade.php');
-
-        } else if (obj.template == 2) {
-            return; // TODO: add later
-
-        }
-
-        await writeTextFile({ path: `${names.folderDownload}/views/components/${names.url}/modals/confirm-delete.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
-    }
-
-    async function generateIndexView(names, obj) { // FIXME:
+    async function generateIndexView(namingConvention, obj) {
         let contents;
 
         if (obj.template == 1) {
@@ -284,7 +253,7 @@
                 .replaceAll('@@@thead@@@', thead)
                 .replaceAll('@@@tbody@@@', tbody)
                 .replaceAll('@@@primarykey@@@', obj.primaryKey)
-                .replaceAll('@@@folderviewname@@@', names.view)
+                .replaceAll('@@@folderviewname@@@', namingConvention.view)
 
         } else if (obj.template == 2) { // TODO: tak test lagi
             const thead = obj.fields.map(field => `<th>${field.label}</th>`).join('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t');
@@ -350,20 +319,22 @@
                 .replaceAll('@@@thead@@@', thead)
                 .replaceAll('@@@tbody@@@', tbody)
                 .replaceAll('@@@primarykey@@@', obj.primaryKey)
-                .replaceAll('@@@folderviewname@@@', names.view)
+                .replaceAll('@@@folderviewname@@@', namingConvention.view)
                 .replaceAll('@@@editInputs@@@', editInputs)
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
         }
 
-        await writeTextFile({ path: `${names.folderDownload}/views/${names.url}/index.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${namingConvention.folderDownload}/views/${namingConvention.view}/index.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }   
 
-    async function generateCreateView(names, obj) {
-        if (obj.template == 1) {
+    async function generateCreateView(namingConvention, obj) {
+        let contents;
+
+        if (obj.template == 1) { 
             const htmlInputs = obj.fields.map(field => {
                 if (field.inputTypeId == 1) { // text
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
                         <input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
                         @error('${field.fieldName}')
@@ -372,8 +343,8 @@
                     </div>`;
 
                 } else if (field.inputTypeId == 2) { // number
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
                         <input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
                         @error('${field.fieldName}')
@@ -382,8 +353,8 @@
                     </div>`;
 
                 } else if (field.inputTypeId == 3) { // date
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
                         <input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}">
                         @error('${field.fieldName}')
@@ -392,8 +363,8 @@
                     </div>`;
 
                 } else if (field.inputTypeId == 4) { // textarea
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
                         <textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}"></textarea>
                         @error('${field.fieldName}')
@@ -402,88 +373,89 @@
                     </div>`;
 
                 } else if (field.inputTypeId == 5) { // select
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
                         <select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
                             <option value=""></option>
                         </select>
-                        <div class="invalid-feedback"></div>
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>`;
 
                 } 
             }).join('\r\n\t\t\t\t\t\t\t\t\t');
 
-            console.log(obj.fields);
-            console.log(htmlInputs);
-
-            let contents = await fetchFileContents('templates/basic-crud/create.blade.php');
+            contents = await fetchFileContents('templates/basic-crud/create.blade.php');
         
             contents = contents
                 .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
-                .replaceAll('@@@folderviewname@@@', names.view)
+                .replaceAll('@@@folderviewname@@@', namingConvention.view)
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
             
         } else if (obj.template == 2) {
             return;
         }
         
-        await writeTextFile({ path: `${names.folderDownload}/views/${names.url}/create.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${namingConvention.folderDownload}/views/${namingConvention.view}/create.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
-    async function generateEditView(names, obj) {
+    async function generateEditView(namingConvention, obj) {
         let contents;
 
         if (obj.template == 1) {
             const htmlInputs = obj.fields.map(field => {
                 if (field.inputTypeId == 1) { // text
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
-                        <input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        <input type="text" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: $${namingConvention.variable}->${field.fieldName} }}">
                         @error('${field.fieldName}')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>`;
                     
                 } else if (field.inputTypeId == 2) { // number
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
-                        <input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        <input type="number" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: $${namingConvention.variable}->${field.fieldName} }}">
                         @error('${field.fieldName}')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>`;
                     
                 } else if (field.inputTypeId == 3) { // date
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
-                        <input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}">
+                        <input type="date" class="form-control @error('${field.fieldName}') is-invalid @enderror" placeholder="${field.label}" name="${field.fieldName}" value="{{ old('${field.fieldName}') ?: $${namingConvention.variable}->${field.fieldName} }}">
                         @error('${field.fieldName}')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>`;
                     
                 } else if (field.inputTypeId == 4) { // textarea
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
-                        <textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}">{{ old('${field.fieldName}') ?: ${names.variable}->${field.fieldName} }}</textarea>
+                        <textarea class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" placeholder="${field.label}" name="${field.fieldName}">{{ old('${field.fieldName}') ?: $${namingConvention.variable}->${field.fieldName} }}</textarea>
                         @error('${field.fieldName}')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>`;
                     
                 } else if (field.inputTypeId == 5) { // select FIXME:
-                    return 
-                    `<div class="form-group">
+                    return `
+                    <div class="form-group">
                         <label class="mb-1">${field.label}</label>
                         <select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
                             <option value=""></option>
                         </select>
-                        <div class="invalid-feedback"></div>
+                        @error('${field.fieldName}')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>`;
                     
                 } 
@@ -493,8 +465,8 @@
         
             contents = contents
                 .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
-                .replaceAll('@@@folderviewname@@@', names.view)
-                .replaceAll('@@@variable@@@', names.variable)
+                .replaceAll('@@@folderviewname@@@', namingConvention.view)
+                .replaceAll('@@@variable@@@', namingConvention.variable)
                 .replaceAll('@@@primarykey@@@', obj.primaryKey)
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
 
@@ -502,7 +474,7 @@
             return;
         }
         
-        await writeTextFile({ path: `${names.folderDownload}/views/${names.url}/edit.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        await writeTextFile({ path: `${namingConvention.folderDownload}/views/${namingConvention.view}/edit.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     function getValidationRules(fields) {
@@ -608,7 +580,7 @@
             <tbody>
                 {#each $fields as field, i}
                     <tr class="hover:bg-slate-100">
-                        <td class="py-2 px-4 text-center border-y border-l border-slate-400">{i}</td>
+                        <td class="py-2 px-4 text-center border-y border-l border-slate-400">{i + 1}</td>
                         <td class="py-2 px-4 text-left whitespace-nowrap border-y border-slate-400">
                             {field.label}
                         </td>

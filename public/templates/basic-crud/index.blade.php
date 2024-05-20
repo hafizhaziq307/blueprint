@@ -7,13 +7,13 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Post</h1>
+                <h1>@@@crudtitle@@@</h1>
             </div>
 
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item active">Post</li>
+                    <li class="breadcrumb-item active">@@@crudtitle@@@</li>
                 </ol>
             </div>
         </div>
@@ -26,7 +26,7 @@
             <div class="col-12">
                 <div class="card">
                     <header class="card-header text-right">
-                        <a href="{{ route('posts.create') }}" class="btn btn-primary">
+                        <a href="{{ route('@@@folderviewname@@@.create') }}" class="btn btn-primary">
                             <i class="fas fa-plus"></i>
                             Tambah Rekod
                         </a>
@@ -37,7 +37,7 @@
             <div class="col-12">
                 <div class="card">
                     <header class="card-header">
-                        <h3 class="card-title">Index Post</h3>
+                        <h3 class="card-title">Index @@@crudtitle@@@</h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
                                 <i class="fas fa-minus"></i>
@@ -65,7 +65,29 @@
         </div>
     </div>
 
-    <x-post.modals.confirm-delete id="deleteModal" />
+    <!-- delete modal -->
+    <div class="modal fade" id="deleteModal">
+        <div class="modal-dialog">
+            <form action="" method="post" class="modal-content">
+                @csrf
+                @method('DELETE')
+                <header class="modal-header">
+                    <h5 class="modal-title">Padam Rekod</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        &times;
+                    </button>
+                </header>
+
+                <div class="modal-body">
+                    Anda pasti ingin memadam rekod tersebut?
+                </div>
+
+                <footer class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Padam</button>
+                </footer>
+            </form>
+        </div>
+    </div>
 </section>
 @endsection
 
@@ -106,7 +128,7 @@
             zeroRecords: "Tiada rekod dijumpai",
         },
         ajax: {
-            url: "{{ route('posts.getAll') }}",
+            url: "{{ route('@@@folderviewname@@@.getAll') }}",
             type: "POST",
             error: (xhr) => {
                 console.error(JSON.parse(xhr.responseText).error);
@@ -142,7 +164,7 @@
                 orderable: false,
                 className: "text-center",
                 render: (data, type, row) => {
-                    const edit = `{{ route('posts.edit', ['id' => ':1']) }}`.replace(':1', row.id);
+                    const edit = `{{ route('@@@folderviewname@@@.edit', ['id' => ':1']) }}`.replace(':1', row.id);
 
                     return `
                     <a href="${edit}" class="btn btn-info">
@@ -165,7 +187,7 @@
     $("#table").on('click', 'tbody .deleteBtn', function() {
         const data = $(this).closest("table").DataTable().row($(this).closest("tr")).data();
 
-        const url = `{{ route('posts.destroy', ['id' => ':1']) }}`.replace(':1', data.id);
+        const url = `{{ route('@@@folderviewname@@@.destroy', ['id' => ':1']) }}`.replace(':1', data.id);
 
         $("#deleteModal form").attr("action", url);
 

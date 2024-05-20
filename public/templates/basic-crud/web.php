@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('@@@folderviewname@@@')->controller(@@@controllername@@@::class)->group(function () {
     Route::get('/', 'index')->name('@@@folderviewname@@@.index');
+    Route::get('/create', 'create')->name('@@@folderviewname@@@.create');
+    Route::get('/{id}/edit', 'edit')->name('@@@folderviewname@@@.edit');
     Route::post('/getAll', 'getAll')->name('@@@folderviewname@@@.getAll');
     Route::post('/getFirst', 'getFirst')->name('@@@folderviewname@@@.getFirst');
     Route::post('/', 'store')->name('@@@folderviewname@@@.store');

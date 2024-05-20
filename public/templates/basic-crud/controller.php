@@ -7,7 +7,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
-class PostController extends Controller
+class @@@controller@@@ extends Controller
 {
     public function index()
     {
@@ -23,9 +23,9 @@ class PostController extends Controller
 
     public function edit($id)
     {
-        $record = @@@modelname@@@::findOrFail($id);
+        $@@@variable@@@ = @@@modelname@@@::findOrFail($id);
 
-        return view('@@@folderviewname@@@.edit', compact('record'));
+        return view('@@@folderviewname@@@.edit', compact('@@@variable@@@'));
     }
 
     public function store(Request $request)
