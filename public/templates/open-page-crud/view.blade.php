@@ -144,7 +144,7 @@
                     </div>
                 </div>
 
-                <!-- edit modal  -->
+                <!-- edit modal -->
                 <div class="modal fade" id="editModal">
                     <div class="modal-dialog modal-xl">
                         <form class="modal-content">

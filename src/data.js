@@ -27,10 +27,10 @@ export const templates = [
         title: 'Basic CRUD',
         description: '',
         stacks: [
-            'Laravel (v9, v10, v11)',
+            'Laravel 11',
             'AdminLTE v3',
-            'Bootstrap v5',
-            'DataTables (v2.0)',
+            'Bootstrap v4',
+            'DataTables v2.0',
         ]
     },
     {
@@ -38,10 +38,10 @@ export const templates = [
         title: 'Onepage CRUD',
         description: '',
         stacks: [
-            'Laravel (v9, v10, v11)',
+            'Laravel 11',
             'AdminLTE v3',
             'Bootstrap v4',
-            'DataTables (v1.13)',
+            'DataTables v1.13',
         ]
     }
 ];
