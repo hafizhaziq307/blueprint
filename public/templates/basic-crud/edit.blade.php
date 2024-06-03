@@ -23,7 +23,7 @@
 <section class="content">
     <div class="row">
         <div class="col-12">
-            <form action="{{ route('@@@folderviewname@@@.update', ['id' => $@@@variable@@@->@@@primarykey@@@]) }}" method="post" class="card">
+            <form action="{{ route('@@@view@@@.update', ['id' => $@@@variable@@@->@@@primarykey@@@]) }}" method="post" class="card">
                 @csrf
                 @method('PATCH')
                 <header class="card-header">

@@ -246,7 +246,7 @@
                 emptyTable: "Tiada rekod."
             },
             ajax: {
-                url: "{{ route('@@@folderviewname@@@.getAll') }}",
+                url: "{{ route('@@@view@@@.getAll') }}",
                 type: "POST",
                 error: (xhr) => {
                     console.error(JSON.parse(xhr.responseText).error);
@@ -286,7 +286,7 @@
             const formData = new FormData($("#addModal form"));
 
             $.ajax({
-                url: `{{ route('@@@folderviewname@@@.store') }}`,
+                url: `{{ route('@@@view@@@.store') }}`,
                 type: "POST",
                 data: formData,
                 processData: false,
@@ -323,7 +323,7 @@
             const data = tbl.row($(this).parents("tr")).data();
 
             $.ajax({
-                url: "{{ route('@@@folderviewname@@@.getFirst') }}",
+                url: "{{ route('@@@view@@@.getFirst') }}",
                 type: "POST",
                 data: {
                     id: data.@@@primarykey@@@,
@@ -338,7 +338,7 @@
                         const formData = new FormData($("#editModal form"));
 
                         $.ajax({
-                            url: `{{ route('@@@folderviewname@@@.update', ['id' => ':1']) }}`.replace(':1', data.@@@primarykey@@@),
+                            url: `{{ route('@@@view@@@.update', ['id' => ':1']) }}`.replace(':1', data.@@@primarykey@@@),
                             type: "POST",
                             data: formData,
                             processData: false,
@@ -382,7 +382,7 @@
                 const formData = new FormData($("#deleteModal form"));
 
                 $.ajax({
-                    url: `{{ route('@@@folderviewname@@@.destroy', ['id' => ':1']) }}`.replace(':1', data.@@@primarykey@@@),
+                    url: `{{ route('@@@view@@@.destroy', ['id' => ':1']) }}`.replace(':1', data.@@@primarykey@@@),
                     type: "POST",
                     data: formData,
                     processData: false,

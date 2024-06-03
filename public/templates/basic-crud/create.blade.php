@@ -23,7 +23,7 @@
 <section class="content">
     <div class="row">
         <div class="col-12">
-            <form action="{{ route('@@@folderviewname@@@.store') }}" method="post" class="card">
+            <form action="{{ route('@@@view@@@.store') }}" method="post" class="card">
                 @csrf
                 <header class="card-header">
                     <h3 class="card-title">Tambah Rekod</h3>

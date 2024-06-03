@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\@@@modelname@@@;
+use App\Models\@@@model@@@;
 use Exception;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 
-class @@@modelname@@@Controller extends Controller
+class @@@model@@@Controller extends Controller
 {
     public function index()
     {
-        return view('@@@folderviewname@@@.index');
+        return view('@@@view@@@.index');
     }
 
     public function getAll(Request $request)
     {
         try {
             if ($request->ajax()) {
-                $data = @@@modelname@@@::get();
+                $data = @@@model@@@::get();
 
                 return Datatables::of($data)
                     ->addIndexColumn()
@@ -33,7 +33,7 @@ class @@@modelname@@@Controller extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = @@@modelname@@@::findOrFail($request->id);
+                $data = @@@model@@@::findOrFail($request->id);
 
                 return response()->json($data);
             }
@@ -54,7 +54,7 @@ class @@@modelname@@@Controller extends Controller
         );
 
         try {
-            @@@modelname@@@::create($validatedData);
+            @@@model@@@::create($validatedData);
 
             return response()->json(['message' => 'Record added successfully!']);
         } catch (Exception $e) {
@@ -74,7 +74,7 @@ class @@@modelname@@@Controller extends Controller
         );
 
         try {
-            @@@modelname@@@::findOrFail($id)->update($validatedData);
+            @@@model@@@::findOrFail($id)->update($validatedData);
 
             return response()->json(['message' => 'Record updated successfully!']);
         } catch (Exception $e) {
@@ -85,7 +85,7 @@ class @@@modelname@@@Controller extends Controller
     public function destroy($id)
     {
         try {
-            @@@modelname@@@::findOrFail($id)->delete();
+            @@@model@@@::findOrFail($id)->delete();
 
             return response()->json(['message' => 'Record deleted successfully!']);
         } catch (Exception $e) {

@@ -173,13 +173,15 @@
         }
 
         contents = contents
-            .replaceAll('@@@modelname@@@', namingConvention.model)
+            .replaceAll('@@@model@@@', namingConvention.model)
             .replaceAll('@@@controller@@@', namingConvention.controller)
             .replaceAll('@@@variable@@@', namingConvention.variable)
-            .replaceAll('@@@folderviewname@@@', namingConvention.view)
+            .replaceAll('@@@view@@@', namingConvention.view)
             .replaceAll('@@@validationrules@@@', validationRules);
 
-        await writeTextFile({ path: `${namingConvention.folderDownload}/${namingConvention.controller}.php`, contents: contents }, { dir: BaseDirectory.Download });
+        const path = `${namingConvention.folderDownload}/${namingConvention.controller}.php`;
+
+        await writeTextFile({ path: path, contents: contents }, { dir: BaseDirectory.Download });
 
     }
 
@@ -195,10 +197,12 @@
 
         contents = contents
             .replaceAll('@@@tablename@@@', obj.tableName)
-            .replaceAll('@@@modelname@@@', namingConvention.model)
+            .replaceAll('@@@model@@@', namingConvention.model)
             .replaceAll('@@@primarykey@@@', obj.primaryKey);
 
-        await writeTextFile({ path: `${namingConvention.folderDownload}/${namingConvention.model}.php`, contents: contents }, { dir: BaseDirectory.Download });
+        const path = `${namingConvention.folderDownload}/${namingConvention.model}.php`;
+
+        await writeTextFile({ path: path, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     async function generateRoute(namingConvention, obj) {
@@ -212,10 +216,12 @@
         }
 
         contents = contents
-            .replaceAll('@@@controllername@@@', namingConvention.controller)
-            .replaceAll('@@@folderviewname@@@', namingConvention.view)
+            .replaceAll('@@@controller@@@', namingConvention.controller)
+            .replaceAll('@@@view@@@', namingConvention.view);
 
-        await writeTextFile({ path: `${namingConvention.folderDownload}/web.php`, contents: contents }, { dir: BaseDirectory.Download });
+        const path = `${namingConvention.folderDownload}/web.php`;
+
+        await writeTextFile({ path: path, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     async function generateAppLayout(namingConvention, obj) {
@@ -226,12 +232,14 @@
 
         } else if (obj.template == 2) {
             return; // TODO: add later
-
         }
 
-        await writeTextFile({ path: `${namingConvention.folderDownload}/views/layouts/app.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        const path = `${namingConvention.folderDownload}/views/layouts/app.blade.php`;
+
+        await writeTextFile({ path: path, contents: contents }, { dir: BaseDirectory.Download });
     }
 
+    // TODO: check later!
     async function generateIndexView(namingConvention, obj) {
         let contents;
 
@@ -253,7 +261,7 @@
                 .replaceAll('@@@thead@@@', thead)
                 .replaceAll('@@@tbody@@@', tbody)
                 .replaceAll('@@@primarykey@@@', obj.primaryKey)
-                .replaceAll('@@@folderviewname@@@', namingConvention.view)
+                .replaceAll('@@@view@@@', namingConvention.view)
 
         } else if (obj.template == 2) { // TODO: tak test lagi
             const thead = obj.fields.map(field => `<th>${field.label}</th>`).join('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t');
@@ -303,8 +311,8 @@
                 else if (field.inputTypeId == 5) { // select
                     return `<div class="form-group">
                         \t\t\t\t\t<label class="mb-1">${field.label}</label>
-                        \t\t\t\t\t<select class="form-control" rows="3" name="${field.fieldName}">
-                            \t\t\t\t\t<option value=""></option>
+                        \t\t\t\t\t<select class="form-control" name="${field.fieldName}">
+                            \t\t\t\t\t<option value="" selected hidden>Pilih</option>
                         \t\t\t\t\t</select>
                         \t\t\t\t\t<div id="${field.fieldName}-error" class="invalid-feedback"></div>
                     \t\t\t\t\t</div>`;
@@ -319,12 +327,14 @@
                 .replaceAll('@@@thead@@@', thead)
                 .replaceAll('@@@tbody@@@', tbody)
                 .replaceAll('@@@primarykey@@@', obj.primaryKey)
-                .replaceAll('@@@folderviewname@@@', namingConvention.view)
+                .replaceAll('@@@view@@@', namingConvention.view)
                 .replaceAll('@@@editInputs@@@', editInputs)
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
         }
 
-        await writeTextFile({ path: `${namingConvention.folderDownload}/views/${namingConvention.view}/index.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        const path = `${namingConvention.folderDownload}/views/${namingConvention.view}/index.blade.php`;
+
+        await writeTextFile({ path: path, contents: contents }, { dir: BaseDirectory.Download });
     }   
 
     async function generateCreateView(namingConvention, obj) {
@@ -376,8 +386,8 @@
                     return `
                     <div class="form-group">
                         <label class="mb-1">${field.label}</label>
-                        <select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
-                            <option value=""></option>
+                        <select class="form-control @error('${field.fieldName}') is-invalid @enderror" name="${field.fieldName}">
+                            <option value="" selected hidden>Pilih</option>
                         </select>
                         @error('${field.fieldName}')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -391,14 +401,16 @@
         
             contents = contents
                 .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
-                .replaceAll('@@@folderviewname@@@', namingConvention.view)
+                .replaceAll('@@@view@@@', namingConvention.view)
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
             
         } else if (obj.template == 2) {
             return;
         }
         
-        await writeTextFile({ path: `${namingConvention.folderDownload}/views/${namingConvention.view}/create.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        const path = `${namingConvention.folderDownload}/views/${namingConvention.view}/create.blade.php`;
+
+        await writeTextFile({ path: path, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     async function generateEditView(namingConvention, obj) {
@@ -450,8 +462,8 @@
                     return `
                     <div class="form-group">
                         <label class="mb-1">${field.label}</label>
-                        <select class="form-control @error('${field.fieldName}') is-invalid @enderror" rows="3" name="${field.fieldName}">
-                            <option value=""></option>
+                        <select class="form-control @error('${field.fieldName}') is-invalid @enderror" name="${field.fieldName}">
+                            <option value="" selected hidden>Pilih</option>
                         </select>
                         @error('${field.fieldName}')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -465,7 +477,7 @@
         
             contents = contents
                 .replaceAll('@@@crudtitle@@@', capitalize(obj.title))
-                .replaceAll('@@@folderviewname@@@', namingConvention.view)
+                .replaceAll('@@@view@@@', namingConvention.view)
                 .replaceAll('@@@variable@@@', namingConvention.variable)
                 .replaceAll('@@@primarykey@@@', obj.primaryKey)
                 .replaceAll('@@@htmlInputs@@@', htmlInputs);
@@ -474,7 +486,9 @@
             return;
         }
         
-        await writeTextFile({ path: `${namingConvention.folderDownload}/views/${namingConvention.view}/edit.blade.php`, contents: contents }, { dir: BaseDirectory.Download });
+        const path = `${namingConvention.folderDownload}/views/${namingConvention.view}/edit.blade.php`;
+
+        await writeTextFile({ path: path, contents: contents }, { dir: BaseDirectory.Download });
     }
 
     function getValidationRules(fields) {

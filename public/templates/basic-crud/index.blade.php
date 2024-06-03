@@ -26,7 +26,7 @@
             <div class="col-12">
                 <div class="card">
                     <header class="card-header text-right">
-                        <a href="{{ route('@@@folderviewname@@@.create') }}" class="btn btn-primary">
+                        <a href="{{ route('@@@view@@@.create') }}" class="btn btn-primary">
                             <i class="fas fa-plus"></i>
                             Tambah Rekod
                         </a>
@@ -128,7 +128,7 @@
             zeroRecords: "Tiada rekod dijumpai",
         },
         ajax: {
-            url: "{{ route('@@@folderviewname@@@.getAll') }}",
+            url: "{{ route('@@@view@@@.getAll') }}",
             type: "POST",
             error: (xhr) => {
                 console.error(JSON.parse(xhr.responseText).error);
@@ -164,7 +164,7 @@
                 orderable: false,
                 className: "text-center",
                 render: (data, type, row) => {
-                    const edit = `{{ route('@@@folderviewname@@@.edit', ['id' => ':1']) }}`.replace(':1', row.id);
+                    const edit = `{{ route('@@@view@@@.edit', ['id' => ':1']) }}`.replace(':1', row.id);
 
                     return `
                     <a href="${edit}" class="btn btn-info">
@@ -187,7 +187,7 @@
     $("#table").on('click', 'tbody .deleteBtn', function() {
         const data = $(this).closest("table").DataTable().row($(this).closest("tr")).data();
 
-        const url = `{{ route('@@@folderviewname@@@.destroy', ['id' => ':1']) }}`.replace(':1', data.id);
+        const url = `{{ route('@@@view@@@.destroy', ['id' => ':1']) }}`.replace(':1', data.id);
 
         $("#deleteModal form").attr("action", url);
 
